@@ -7,7 +7,7 @@ from discord import Intents
 from config import Config
 from db.db import users_db
 
-__version__ = "2.0.0a"
+__version__ = "2.0.0"
 
 
 class R6HubBot(commands.Bot):
