@@ -1,52 +1,21 @@
 import requests
 
-
-from core import json_unpacker
-from core.data import APIUrls
-
-
-
 class Parser(requests.Session):
     def __init__(self):
         # API - tabstats API - https://r6.apitab.net/website
+        
+        # API Links
+        self.__tabstats_search_api_url = "https://r6.apitab.net/website/search"
+        self.__tabstats_profie_api_url = "https://r6.apitab.net/website/profiles/{}"
+        
         # init super class
         super().__init__()
         
-        # payload
+        # API payload
         self.__payload = {"display_name": "User", "platform": "uplay"}
-        
-
-    def parse_player(
-        self, 
-        player: str, 
-        _id: bool = False, 
-        full: bool = False
-    ) -> dict:
-        """_summary_: Search player by name or id
-
-        Args:
-            player (str): Rainbow Six Siege player name or id
-            _id (bool, optional): if True, will search player buy his id. Defaults to False.
-            full (bool, optional): if True, return overall player data. Defaults to False.
-
-        Returns:
-            list or str or dict: 'list of players' or 'player id' or 'player data'
-        """
-        
-        if _id:
-            if full:
-                return self.__parse_full_json__(player)
-            return self.__parse_by_id__(player)
-        if full:
-            return self.__parse_full_json__(self.parse_id(player))
-        return self.__find_player__(player)
+          
     
-                      
-    def search_player(self, player) -> list:
-        return self.__search_player_by_name__(player)
-        
-        
-    def __search_player_by_name__(self, playername: str) -> list:
+    def search_player(self, playername: str) -> list:
         """_summary_ : Search player by name
 
         Args:
@@ -57,45 +26,13 @@ class Parser(requests.Session):
         """
         
         self.__payload["display_name"] = playername
-        response = self.get(APIUrls.tabstats_search_api_url, params=self.__payload)
+        response = self.get(self.__tabstats_search_api_url, params=self.__payload)
         if response.status_code != 200:
             return []
-        return [json_unpacker.unpack_json(_json) for _json in response.json()]
-    
-    
-    def __find_player__(self, playername: str) -> dict:
-        """_summary_ : Find player by name
-        
-        Args:
-            playername (str): Rainbow Six Siege player name
-            
-        Returns:
-            dict: parsed player data (first player in search results)
-        """
-        
-        player = self.__search_player_by_name__(playername)
-        if not player:
-            return {}
-        return player[0]
-    
-    
-    def parse_id(self, playername: str) -> str:
-        """_summary_ : Parse player id from player name
+        return [self.__unpack_json__(_json) for _json in response.json()]
 
-        Args:
-            playername (str): Rainbow Six Siege player name
-
-        Returns:
-            str: Rainbow Six Siege player id
-        """
-        
-        response = self.__find_player__(playername)
-        if not response:
-            return ""
-        return response["id"]
     
-    
-    def __parse_full_json__(self, playerid: str) -> dict:
+    def parse_player(self, player_id: str) -> dict:
         """_summary_ : Parse overall player data from player id
 
         Args:
@@ -105,28 +42,60 @@ class Parser(requests.Session):
             dict: overall player data in json format
         """
         
-        response = self.get(APIUrls.tabstats_profie_api_url.format(playerid))
+        response = self.get(self.__tabstats_profie_api_url.format(player_id))
         if response.status_code != 200:
             return {}
         
         return response.json()
-    
-    
-    def __parse_by_id__(self, playerid: str) -> dict:
-        """_summary_ : Parse player data from player id
+
+
+    def __default_search_json__(self) -> dict:
+        return {
+            "name": "N/A",
+            "id": "N/A",
+            "level": "N/A",
+            "rank": "N/A",
+        }
+
+
+    def __extract_rank__(self, response, _json) -> dict:
+        rank = None
+        cssr = response.get("current_season_ranked_record")
+        if cssr:
+            rank = cssr.get("rank_slug")[3:]
+            
+        if rank:
+            _json.update({"rank": rank})
+            
+        return _json
+
+
+    def __extract_profile__(self, _json: dict, response: dict) -> dict:
+        profile = response.get("profile")
+        if profile:
+            _json.update({"name": profile.get("display_name")})
+            _json.update({"id": profile.get("user_id")})
+            _json.update({"level": profile.get("level")})
+        
+        return _json
+
+
+    def __unpack_json__(self, response, full=False) -> dict:
+        """Unpack json from api to dict
 
         Args:
-            playerid (str): Rainbow Six Siege player id
+            response (_type_): raw json from api
+            full (bool, optional): if true, unpacking from full json. Defaults to False.
 
         Returns:
-            dict: short player data in dict
+            dict: unpacked json with player data
         """
 
-        response = self.__parse_full_json__(playerid)
         if not response:
             return {}
-        
-        return json_unpacker.unpack_json(response, full=True)
-    
-    
-    
+
+        _json = self.__default_search_json__()
+        _json = self.__extract_profile__(_json, response)
+        _json = self.__extract_rank__(response, _json)
+
+        return _json

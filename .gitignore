@@ -132,7 +132,14 @@ dmypy.json
 .vscode/
 
 
-# My Own
-tests/
+# My Own Files
 db/users.csv
 config/config.ini
+main.py
+
+# My Own Folders
+tests/
+old/
+temp/
+json_examples/
+logging/

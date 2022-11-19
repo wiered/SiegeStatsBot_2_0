@@ -26,3 +26,59 @@ def get_name_from_json(_json) -> str:
     if _json.get("name"):
         return _json["name"]
     return ""
+
+
+def parse_str(key) -> str:
+    if not key:
+        return "N/A"
+    
+    if isinstance(key, str):
+        return key
+    
+    return "N/A"
+
+
+def parse_int(key) -> int:
+    if not key:
+        return 0
+    
+    if isinstance(key, int):
+        return key
+    
+    if key[0] == "-":
+        key = key[1:]
+        
+    if key.isnumeric():
+        return int(key)
+    
+    return 0
+
+
+def parse_float(key) -> float:
+    if not key:
+        return 0.0
+    
+    if isinstance(key, float) or isinstance(key, int):
+        return key  
+    
+    _key = key.replace(".", "", 1)
+    if key[0] == "-":
+        _key = _key[1:]
+        
+    if _key.isnumeric():
+        return float(key)
+    
+    return 0.0
+
+
+def parse_bool(key) -> bool:
+    if not key:
+        return False
+    
+    if isinstance(key, bool):
+        return key
+    
+    if key == "true":
+        return True
+    
+    return False
