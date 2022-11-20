@@ -111,10 +111,8 @@ class UsersVault:
         for item in items:
             self.add_user(
                 User(
-                    name    =str(item.get("name")),
                     siege_id=str(item.get("siege_id")),
-                    d_id    =type_helpers.get_d_id(item),
-                    rank    =str(item.get("rank")),
+                    d_id=type_helpers.get_d_id(item),
                 )
             )
         logging.info("Users loaded from csv")
@@ -131,25 +129,19 @@ class UsersVault:
         """    
         
         return {
-            "name": user.name,
             "siege_id": user.siege_id,
             "d_id": user.d_id,
-            "rank": user.rank,
         }
     
     
 class User:
     def __init__(
         self, 
-        name: str = "", 
-        d_id: int = 0, 
-        siege_id: str = "", 
-        rank: str = "Unranked"
+        d_id: int = 0,
+        siege_id: str = "",
     ):
-        self.__siege_name = name
         self.__d_id = d_id
         self.__siege_id = siege_id
-        self.__rank = rank
         self.__full_json = {}
         
         self.parse_data()
@@ -158,7 +150,7 @@ class User:
 
     @property
     def name(self) -> str:
-        return self.__siege_name
+        return self.data.name
 
 
     @property
@@ -173,7 +165,7 @@ class User:
 
     @property
     def rank(self) -> str:
-        return self.__rank
+        return self.data.rank
 
 
     @property
@@ -200,13 +192,10 @@ class User:
             
         if isinstance(full_json, dict):
             self.__full_json = full_json
-
             self.player_data: PlayerData = PlayerData(self.__full_json)
-            self.__rank = self.player_data.current_season_records.ranked.rank_slug
-            self.__siege_name = self.player_data.profile.display_name
 
-        logging.info(f"Stats parsed: {self.__rank}")
+        logging.info(f"Stats parsed: {self.rank}")
 
 
     def __repr__(self) -> str:
-        return f"User({self.__siege_name}, {self.__d_id}, {self.__siege_id}, {self.__rank})"
+        return f"User({self.__d_id}, {self.__siege_id})"

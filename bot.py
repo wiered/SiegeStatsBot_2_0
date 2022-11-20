@@ -8,7 +8,7 @@ from discord import Intents
 from config import Config
 from db.db import users_db
 
-__version__ = "2.0.3"
+__version__ = "2.0.4"
 
 
 class R6HubBot(commands.Bot):
@@ -70,3 +70,4 @@ def exit_handler():
 if __name__ == "__main__":
     atexit.register(exit_handler)
     asyncio.run(main())
+    

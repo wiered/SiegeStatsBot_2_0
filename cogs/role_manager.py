@@ -20,6 +20,8 @@ class RoleManager(commands.Cog):
     async def update_roles(self):
         print("Updating roles...")
         for user in list(users_db.users.values()):
+            user.parse_data()
+            
             guild = self.bot.get_guild(843082437961318400)
             member = guild.get_member(user.d_id)
             
@@ -32,8 +34,7 @@ class RoleManager(commands.Cog):
                 if _role.id in RoleDicts.rank_roles_ids:
                     await member.remove_roles(_role)
                     
-            await member.add_roles(role)
-            
+            await member.add_roles(role)            
             
     
     @update_roles.before_loop
@@ -44,3 +45,4 @@ class RoleManager(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(RoleManager(bot))
+    

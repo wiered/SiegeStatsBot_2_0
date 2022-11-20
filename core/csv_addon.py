@@ -14,10 +14,8 @@ def write_to_csv(file_name, data):
         writer = csv.DictWriter(
             f, 
             fieldnames=[
-                'name', 
                 'd_id', 
                 'siege_id',
-                'rank'
             ]
             )
         writer.writeheader()
