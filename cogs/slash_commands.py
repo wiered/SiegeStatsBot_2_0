@@ -13,20 +13,24 @@ class HubTree(commands.Cog):
         self.bot = bot
         
     
-    @app_commands.command(name="stats", description="Get siege stats")
+    hub_group = app_commands.Group(name="hub", description="Hub commands")
+    sielent = app_commands.Group(name="sielent", description="Sielent mode")
+    
+    
+    @hub_group.command(name="stats", description="Get siege stats")
     async def stats(self,ctx, name:str=""):
         if not name:
             return await self.__get_self_stats__(ctx)
         return await self.__get_search_results__(ctx, name, auth=False, ephemeral=False)
     
-    @app_commands.command(name="sielent_stats", description="Get siege stats. Will see only you")
+    @sielent.command(name="stats", description="Get siege stats. Will see only you")
     async def sielent_stats(self,ctx, name:str=""):
         if not name:
             return await self.__get_self_stats__(ctx, ephemeral=True)
         return await self.__get_search_results__(ctx, name, auth=False, ephemeral=True)
         
         
-    @app_commands.command(name="authorize", description="Authorize your account")
+    @hub_group.command(name="authorize", description="Authorize your account")
     async def auth(self, interaction: Interaction, name: str) -> None:
         if not name or len(name) < 3:
             return await interaction.response.send_message("Please provide your name!")
