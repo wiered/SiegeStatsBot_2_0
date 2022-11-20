@@ -39,6 +39,7 @@ class AuthButton(ui.Button):
                 embed = ProfileEmbed(_user.player_data, self.__d_id),
                 view=_view
             )
+        
             
             
 class SearchButton(ui.Button):
@@ -200,17 +201,17 @@ class SeasonsView(ui.View):
 
 
 class SearchButtonsView(ui.View):
-    def __init__(self, _users_list: list, d_id: int, auth = False):
+    def __init__(self, search_results: list, d_id: int, auth = False):
         super().__init__(timeout=180)
-        self.users_list = _users_list
+        self.search_results = search_results
         self.d_id = d_id
         self.auth = auth
         self.__generate_buttons__()
         
     
     def __generate_buttons__(self):
-        for i in range(len(self.users_list)):
-            _button = AuthButton(self.d_id, i, self.users_list[i]) if self.auth else SearchButton(self.d_id, i, self.users_list[i])
+        for i in range(len(self.search_results)):
+            _button = AuthButton(self.d_id, i, self.search_results[i]) if self.auth else SearchButton(self.d_id, i, self.search_results[i])
             self.add_item(_button)
        
 

@@ -117,56 +117,7 @@ class PastSeasonRankedRecords:
             return self.seasons[self.keys.index(key)]
         return self.seasons[0]
     
-        
-class PlayerData:
-    def __init__(self, _json):
-        self.profile: Profile = Profile(_json.get('profile'))
-        self.name = self.profile.display_name
-        self.leaderboard: int = _json.get('leaderboard')
-        
-        self.summary_graph_data: SummaryGraphData = SummaryGraphData(_json.get('summary_graph_data'))
-        
-        self.social_profile = _json.get('social_profile')
-        self.game_bans = _json.get('game_bans')
-        self.profile_bans = _json.get('profile_bans')
-        self.external_bans = _json.get('external_bans')
-        
-        if _json.get("aliases") is not None:
-            self.aliases: list[Alias] = [Alias(x) for x in _json.get("aliases")]
-        else:    
-            self.aliases = _json.get('aliases')
-        
-        self.general_records: GeneralRecords = GeneralRecords(_json.get('general_records'))
-        self.current_season_records: CurrentSeasonRecords = CurrentSeasonRecords(_json.get('current_season_records'))
-        self.past_season_ranked_records: PastSeasonRankedRecords = PastSeasonRankedRecords(_json.get('past_season_ranked_records'))
-        self.top_region: str = _json.get('top_region')
-        self.region_breakdown = _json.get('region_breakdown')
-        if _json.get("last_played_at") is not None:
-            self.last_played_at: datetime = datetime.fromisoformat(_json.get('last_played_at'))
-        else:
-            self.last_played_at = datetime.fromisoformat("1970-01-01T00:00:00+00:00")
-
-        if self.current_season_records.ranked is not None:
-            self.is_full = True
-        
-    
-    @property
-    def seasons(self) -> list[str]:
-        return self.past_season_ranked_records.keys
-    
-    
-    def get_current_season_record(self) -> str:
-        return f"Player: {self.name}\n{self.current_season_records}"
-    
-    
-    def get_season_record(self, season: str) -> PastSeasonRankedRecords.Season:
-        return self.past_season_ranked_records.get(season)
-    
-    
-    def __repr__(self) -> str:
-        return f"Player: {self.name}\n{self.profile}"
-
-        
+           
 class Profile:
     def __init__(self, _json) -> None:
         self.__set_default__()
@@ -469,3 +420,52 @@ class CurrentSeasonRecords:
             s += f"Champion Position: {self.champion_position}\n"
             
             return s
+
+
+class PlayerData:
+    def __init__(self, _json):
+        self.profile: Profile = Profile(_json.get('profile'))
+        self.name = self.profile.display_name
+        self.leaderboard: int = _json.get('leaderboard')
+        
+        self.summary_graph_data: SummaryGraphData = SummaryGraphData(_json.get('summary_graph_data'))
+        
+        self.social_profile = _json.get('social_profile')
+        self.game_bans = _json.get('game_bans')
+        self.profile_bans = _json.get('profile_bans')
+        self.external_bans = _json.get('external_bans')
+        
+        if _json.get("aliases") is not None:
+            self.aliases: list[Alias] = [Alias(x) for x in _json.get("aliases")]
+        else:    
+            self.aliases = _json.get('aliases')
+        
+        self.general_records: GeneralRecords = GeneralRecords(_json.get('general_records'))
+        self.current_season_records: CurrentSeasonRecords = CurrentSeasonRecords(_json.get('current_season_records'))
+        self.past_season_ranked_records: PastSeasonRankedRecords = PastSeasonRankedRecords(_json.get('past_season_ranked_records'))
+        self.top_region: str = _json.get('top_region')
+        self.region_breakdown = _json.get('region_breakdown')
+        if _json.get("last_played_at") is not None:
+            self.last_played_at: datetime = datetime.fromisoformat(_json.get('last_played_at'))
+        else:
+            self.last_played_at = datetime.fromisoformat("1970-01-01T00:00:00+00:00")
+
+        if self.current_season_records.ranked is not None:
+            self.is_full = True
+        
+    
+    @property
+    def seasons(self) -> list[str]:
+        return self.past_season_ranked_records.keys
+    
+    
+    def get_current_season_record(self) -> str:
+        return f"Player: {self.name}\n{self.current_season_records}"
+    
+    
+    def get_season_record(self, season: str) -> PastSeasonRankedRecords.Season:
+        return self.past_season_ranked_records.get(season)
+    
+    
+    def __repr__(self) -> str:
+        return f"Player: {self.name}\n{self.profile}"

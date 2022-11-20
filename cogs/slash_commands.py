@@ -22,7 +22,7 @@ class HubTree(commands.Cog):
     @app_commands.command(name="sielent_stats", description="Get siege stats. Will see only you")
     async def sielent_stats(self,ctx, name:str=""):
         if not name:
-            return await self.__get_self_stats__(ctx)
+            return await self.__get_self_stats__(ctx, ephemeral=True)
         return await self.__get_search_results__(ctx, name, auth=False, ephemeral=True)
         
         
@@ -41,7 +41,7 @@ class HubTree(commands.Cog):
         with parser.Parser() as p:
             search_results = p.search_player(name)
             embed = ui_cogs.SearchEmbed(search_results, name)
-            view = ui_cogs.SearchButtonsView(search_results, name, auth)
+            view = ui_cogs.SearchButtonsView(search_results, interaction.user.id, auth)
             await interaction.response.send_message(embed=embed, view=view, delete_after=1800, ephemeral=ephemeral)
     
     

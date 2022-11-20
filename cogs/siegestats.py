@@ -41,6 +41,7 @@ class SiegeStats(commands.Cog):
             
     
     @commands.command()
+    @commands.has_permissions(administrator=True)
     async def clear(self, ctx):
         await ctx.channel.clone(name = ctx.channel.name, reason = "Clearing channel")
         await ctx.channel.delete(reason = "Clearing channel")

@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 
 import discord
 from discord.ext import commands
@@ -7,7 +8,7 @@ from discord import Intents
 from config import Config
 from db.db import users_db
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 
 class R6HubBot(commands.Bot):
@@ -52,10 +53,13 @@ async def main():
     async with bot:
         bot.tree.copy_global_to(guild=discord.Object(id=993907879662866532))
         await bot.start(config.token)
-        
+
+
+def exit_handler():
     users_db.save_instance_to_csv()
+    print("Bot is shutting down!")
 
 
 if __name__ == "__main__":
+    atexit.register(exit_handler)
     asyncio.run(main())
-    
