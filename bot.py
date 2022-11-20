@@ -8,7 +8,7 @@ from discord import Intents
 from config import Config
 from db.db import users_db
 
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 
 
 class R6HubBot(commands.Bot):
@@ -17,7 +17,11 @@ class R6HubBot(commands.Bot):
         super().__init__(command_prefix="w!", intents=intents)
         
         self.config = Config()
-        self.loaded_cogs = ["cogs.siegestats", "cogs.slash_commands"]
+        self.loaded_cogs = [
+            "cogs.siegestats", 
+            "cogs.slash_commands", 
+            "cogs.role_manager"
+        ]
         self.start_time = discord.utils.utcnow()
         
         print("Bot is ready!")
@@ -41,6 +45,9 @@ class R6HubBot(commands.Bot):
             except Exception:
                 pass
             
+    async def close(self) -> None:
+        await super().close()
+            
 
 users_db.load_instance_from_csv()
 config = Config()
@@ -53,7 +60,7 @@ async def main():
     async with bot:
         bot.tree.copy_global_to(guild=discord.Object(id=993907879662866532))
         await bot.start(config.token)
-
+    
 
 def exit_handler():
     users_db.save_instance_to_csv()

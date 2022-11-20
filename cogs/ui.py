@@ -39,8 +39,7 @@ class AuthButton(ui.Button):
                 embed = ProfileEmbed(_user.player_data, self.__d_id),
                 view=_view
             )
-        
-            
+                   
             
 class SearchButton(ui.Button):
     def __init__(self, d_id: int, i, _, *args, **kwargs):
@@ -78,7 +77,7 @@ class GitHubButton(ui.Button):
 class TabstatsButton(ui.Button):
     def __init__(self, url: str):
         super().__init__(
-            label="TabStats", 
+            label="Tabstats", 
             style=ButtonStyle.link,
             url=url,
         )

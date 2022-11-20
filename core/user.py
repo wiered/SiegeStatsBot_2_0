@@ -153,6 +153,7 @@ class User:
         self.__full_json = {}
         
         self.parse_data()
+        self.player_data: PlayerData = PlayerData(self.__full_json)
 
 
     @property
@@ -180,6 +181,11 @@ class User:
         if self.__full_json:
             return self.__full_json
         return {}
+    
+    
+    @property
+    def data(self) -> PlayerData:
+        return self.player_data
 
 
     def parse_data(self):

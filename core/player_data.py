@@ -459,6 +459,11 @@ class PlayerData:
         return self.past_season_ranked_records.keys
     
     
+    @property
+    def rank(self) -> str:
+        return self.current_season_records.ranked.rank_slug
+    
+    
     def get_current_season_record(self) -> str:
         return f"Player: {self.name}\n{self.current_season_records}"
     

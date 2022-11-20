@@ -1,6 +1,4 @@
 class RoleDicts:
-    """ Class with dicts for roles and ranks
-    """
     ranks_pics = {
         'No matches played this season': 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vMjUyYWRhNjMtNDQzOS00ZmI3LWIzZjktNDY0YWZlNTA3MGY2.webp',
         'Not played': 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vMjUyYWRhNjMtNDQzOS00ZmI3LWIzZjktNDY0YWZlNTA3MGY2.webp',
@@ -50,3 +48,65 @@ class RoleDicts:
         
         'champion' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZTFmYzZlYjItOGM1OS00OTY2LWE0OTgtZjBiMTQ0MDEwMGMw.webp',  
     }
+    
+    rank_roles = {
+        'No matches played this season': 1043964562967384104,
+        'no matches played this season': 1043964562967384104,
+        'Not played': 1043964562967384104,
+        'not played': 1043964562967384104,
+        'Unranked' : 1043964562967384104,
+        'unranked' : 1043964562967384104,
+        'N/A'      : 1043964562967384104,
+        
+        'Copper'   : 1032729862923898914,
+        'copper-1' : 1032729862923898914,
+        'copper-2' : 1032729862923898914,
+        'copper-3' : 1032729862923898914,
+        'copper-4' : 1032729862923898914,
+        'copper-5' : 1032729862923898914,
+
+        'Bronze'   : 1032729713724112979,
+        'bronze-1' : 1032729713724112979,
+        'bronze-2' : 1032729713724112979,
+        'bronze-3' : 1032729713724112979,
+        'bronze-4' : 1032729713724112979,
+        'bronze-5' : 1032729713724112979,
+
+        'Silver'   : 1032729502431854642,
+        'silver-1' : 1032729502431854642,
+        'silver-2' : 1032729502431854642,
+        'silver-3' : 1032729502431854642,
+        'silver-4' : 1032729502431854642,
+        'silver-5' : 1032729502431854642,
+
+        'Gold'   : 1032729390179696772,
+        'gold-1' : 1032729390179696772,
+        'gold-2' : 1032729390179696772,
+        'gold-3' : 1032729390179696772, 
+
+        'Platinum'   : 1032729198822948874,
+        'platinum-1' : 1032729198822948874,
+        'platinum-2' : 1032729198822948874,
+        'platinum-3' : 1032729198822948874,
+
+        'Diamond'   : 1029335924712144937,
+        'diamond-1' : 1029335924712144937,
+        'diamond-2' : 1029335924712144937,
+        'diamond-3' : 1029335924712144937,
+        
+        'Champion' : 1029335755543302184,
+        'champion' : 1029335755543302184,
+    }
+    
+    rank_roles_ids = [
+        1043964562967384104,
+        1032729862923898914,
+        1032729713724112979,
+        1032729502431854642,
+        1032729502431854642,
+        1032729390179696772,
+        1032729198822948874,
+        1029335924712144937,
+        1029335755543302184,
+    ]
+    
