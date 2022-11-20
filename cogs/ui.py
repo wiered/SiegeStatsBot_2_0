@@ -29,7 +29,7 @@ class AuthButton(ui.Button):
             
     
     async def callback(self, interaction: Interaction):
-        _user = user.User(name = str(self.label), d_id = self.__d_id, siege_id=str(self.custom_id))
+        _user = user.User(d_id = self.__d_id, siege_id=str(self.custom_id))
         users_db.add_user(_user)
         
         if interaction.message:
@@ -55,7 +55,7 @@ class SearchButton(ui.Button):
             
     
     async def callback(self, interaction: Interaction):
-        _user = user.User(name = str(self.label), d_id = self.__d_id, siege_id=str(self.custom_id))
+        _user = user.User(d_id = self.__d_id, siege_id=str(self.custom_id))
         if interaction.message:
             _view = SeasonsView(_user.player_data, self.__d_id)
             await interaction.response.edit_message(
@@ -95,7 +95,7 @@ class SeasonSelect(ui.Select):
         
     
     async def callback(self, interaction: Interaction):    
-        _user = user.User(name = self.__user_name, d_id = self.__d_id, siege_id=str(self.__user_id))
+        _user = user.User(d_id = self.__d_id, siege_id=str(self.__user_id))
         
         embed = ProfileEmbed(_user.player_data, self.__d_id, season=self.values[0])
         _view = SeasonsView(_user.player_data, self.__d_id)
