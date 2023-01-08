@@ -25,7 +25,7 @@ class UsersVault:
 
 
     def add_user(self, user):
-        """_summary_: Add user to UsersVault
+        """Add user to UsersVault
 
         Args:
             user (User): User object
@@ -35,7 +35,7 @@ class UsersVault:
 
 
     def load_instance_from_csv(self):
-        """_summary_: Instantiate UsersVault from csv
+        """Instantiate UsersVault from csv
 
         Raises:
             FileNotFoundError: if csv file not found
@@ -54,7 +54,7 @@ class UsersVault:
 
     
     def save_instance_to_csv(self):
-        """_summary_: Save all authorized users to csv"""        
+        """Save all authorized users to csv"""        
 
         print(*self.__users.values(), sep="\n")
         users_data = []
@@ -65,7 +65,7 @@ class UsersVault:
 
     
     def get_user(self, d_id: int):
-        """_summary_: Get user by discord id
+        """Get user by discord id
 
         Args:
             d_id (int): user's discord ID
@@ -78,7 +78,7 @@ class UsersVault:
     
     
     def delete_by_dID(self, d_id: int) -> None:
-        """_summary_: Delete user by his discord ID
+        """Delete user by his discord ID
 
         Args:
             d_id (int): user's discord ID
@@ -88,7 +88,7 @@ class UsersVault:
     
     
     def is_authorized(self, d_id: int) -> bool:
-        """_summary_: Check if user is authorized
+        """Check if user is authorized
 
         Args:
             d_id (int): user's discord ID
@@ -101,8 +101,7 @@ class UsersVault:
     
     
     def __load_users__(self):
-        """_summary_: Load all authorized users from csv
-        """        
+        """Load all authorized users from csv"""        
         
         items = csv_addon.load_from_csv("./db/users.csv")
         if len(items) == 0:
@@ -181,7 +180,7 @@ class User:
 
 
     def parse_data(self):
-        """_summary_: Parsing data from tabstats
+        """Parsing data from tabstats
 
         Args:
             by_name (bool, optional): if True, parse by name. Defaults to False.

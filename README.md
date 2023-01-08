@@ -1,1 +1,0 @@
-# SiegeStatsBot_2_0
