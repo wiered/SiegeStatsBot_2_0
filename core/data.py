@@ -68,11 +68,8 @@ class RoleDicts:
     config.read_roles()
     
     rank_roles = {
-        'No matches played this season': config.unranked,
-        'no matches played this season': config.unranked,
-        'Not played': config.unranked,
-        'not played': config.unranked,
-        'Unranked' : config.unranked,
+        'nomatchesplayedthisseason': config.unranked,
+        'notplayed': config.unranked,
         'unranked' : config.unranked,
         'N/A'      : config.unranked,
         
