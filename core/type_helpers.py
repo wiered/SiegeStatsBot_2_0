@@ -1,4 +1,4 @@
-"""_summary_: Get variable from json. Used for strong typing
+""" Get variable from json. Used for strong typing
 
     Args:
         _json (dict): json with player data

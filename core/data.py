@@ -11,6 +11,7 @@ class RoleDicts:
         'Platinum' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vODQxZjViM2YtYTI2ZC00NWI5LWE3N2EtYTg4MjljNzMxMDFj.webp',
         'Diamond'  : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vNGI3YmJhZTgtZTcyMC00ZTg3LWFjNjQtM2NlNmZiODUxYjJk.webp',
         'Champion' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZTFmYzZlYjItOGM1OS00OTY2LWE0OTgtZjBiMTQ0MDEwMGMw.webp',
+        'No rank': 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZTFmYzZlYjItOGM1OS00OTY2LWE0OTgtZjBiMTQ0MDEwMGMw.webp',
         
         'no matches played this season': 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vMjUyYWRhNjMtNDQzOS00ZmI3LWIzZjktNDY0YWZlNTA3MGY2.webp',
         'not played': 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vMjUyYWRhNjMtNDQzOS00ZmI3LWIzZjktNDY0YWZlNTA3MGY2.webp',
@@ -37,14 +38,26 @@ class RoleDicts:
         'gold-1' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vNGZlZGEwOGQtNjVlOC00NWY3LTg4OGYtMGVkYTcyZDdmMGMw.webp',    
         'gold-2' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vNTE2MjRjOWEtYmY1YS00MjlkLTkzMzAtZWJkNWJhYzgyMTEz.webp',    
         'gold-3' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vYjU1MmZhNmItODcwNC00NjYzLWFhMDctYjIyOWRhNDRlYzkx.webp',     
+        'gold-4' : 'https://img.apitab.com/plain/quality:50/resize:fit:256:0/bG9jYWw6Ly8vOTg1MjlhMjAtOTgwMy00ZDRiLTljMmMtYWY2ZjI5MTUyYzEy.webp',     
+        'gold-5' : 'https://img.apitab.com/plain/quality:50/resize:fit:256:0/bG9jYWw6Ly8vMGUwNjU2OWItMjg3My00OGY2LThlMDktZGQzNzAwNWI1YTdl.webp',     
 
         'platinum-1' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vODQxZjViM2YtYTI2ZC00NWI5LWE3N2EtYTg4MjljNzMxMDFj.webp',    
         'platinum-2' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZDAxZmRmMzItNWMwYS00M2ZkLTlkMzUtMTM2NzdiMjJlZGNi.webp',    
         'platinum-3' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZGE5YWNjZGQtZTA3Yi00OTk0LTkwNDgtNGE0ZDkyZTg4ZWU1.webp',    
+        '-platinum-4' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZGE5YWNjZGQtZTA3Yi00OTk0LTkwNDgtNGE0ZDkyZTg4ZWU1.webp',    
+        'platinum-5' : 'https://img.apitab.com/plain/quality:50/resize:fit:256:0/bG9jYWw6Ly8vZDVmMTc4NmMtMzlkMS00MDU0LTk3NjktM2RhYTFjNmU1OGQx.webp',    
+
+        'emerald-1' : 'https://img.apitab.com/plain/quality:50/resize:fit:256:0/bG9jYWw6Ly8vMDg5ZTRhMTktYzNkNi00NmE0LWJlMzQtZjNkYTkwNGRkNDVk.webp',    
+        '-emerald-2' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZDAxZmRmMzItNWMwYS00M2ZkLTlkMzUtMTM2NzdiMjJlZGNi.webp',    
+        '-emerald-3' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZGE5YWNjZGQtZTA3Yi00OTk0LTkwNDgtNGE0ZDkyZTg4ZWU1.webp',    
+        '-emerald-4' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZGE5YWNjZGQtZTA3Yi00OTk0LTkwNDgtNGE0ZDkyZTg4ZWU1.webp',    
+        '-emerald-5' : 'https://img.apitab.com/plain/quality:50/resize:fit:256:0/bG9jYWw6Ly8vZDVmMTc4NmMtMzlkMS00MDU0LTk3NjktM2RhYTFjNmU1OGQx.webp',    
 
         'diamond-1' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vNGI3YmJhZTgtZTcyMC00ZTg3LWFjNjQtM2NlNmZiODUxYjJk.webp',    
         'diamond-2' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZGIyZmIzY2YtYTg4Yi00ODc2LWEyMjctYjBiMzZmYWI5MDg2.webp',    
         'diamond-3' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZDI1MGJiNjgtYTJiNS00YTg5LTllZjYtYzlhM2MyZDc5NGNl.webp',
+        '-diamond-4' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZDI1MGJiNjgtYTJiNS00YTg5LTllZjYtYzlhM2MyZDc5NGNl.webp',
+        '-diamond-5' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZDI1MGJiNjgtYTJiNS00YTg5LTllZjYtYzlhM2MyZDc5NGNl.webp',
         
         'champion' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZTFmYzZlYjItOGM1OS00OTY2LWE0OTgtZjBiMTQ0MDEwMGMw.webp',  
     }

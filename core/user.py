@@ -56,7 +56,6 @@ class UsersVault:
     def save_instance_to_csv(self):
         """Save all authorized users to csv"""        
 
-        print(*self.__users.values(), sep="\n")
         users_data = []
         for user in self.__users.values():
             users_data.append(self.__generate_user_data__(user))

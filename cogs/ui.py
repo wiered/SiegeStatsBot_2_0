@@ -15,52 +15,51 @@ default_footer = "R6HubBot • https://github.com/wiered"
 # ========================= #
 # Buttons                   #
 
+
 class AuthButton(ui.Button):
     def __init__(self, d_id: int, i, _, *args, **kwargs):
         super().__init__(
-            label=str(i+1), 
-            custom_id=_.get("id"), 
+            label=str(i+1),
+            custom_id=_.get("id"),
             style=ButtonStyle.green,
             row=i//4,
-            *args, 
+            *args,
             **kwargs
             )
         self.__d_id = d_id
-            
-    
+
     async def callback(self, interaction: Interaction):
-        _user = user.User(d_id = self.__d_id, siege_id=str(self.custom_id))
+        _user = user.User(d_id=self.__d_id, siege_id=str(self.custom_id))
         users_db.add_user(_user)
-        
+
         if interaction.message:
             _view = SeasonsView(_user.player_data, self.__d_id)
             await interaction.response.edit_message(
                 content=f"Authorized as {_user.name}",
-                embed = ProfileEmbed(_user.player_data, self.__d_id),
+                embed=ProfileEmbed(_user.player_data, self.__d_id),
                 view=_view
             )
-                   
-            
+
+
 class SearchButton(ui.Button):
     def __init__(self, d_id: int, i, _, *args, **kwargs):
         super().__init__(
-            label=str(i+1), 
-            custom_id=_.get("id"), 
+            label=str(i+1),
+            custom_id=_.get("id"),
             style=ButtonStyle.green,
             row=i//4,
-            *args, 
+            *args,
             **kwargs
             )
         self.__d_id = d_id
-            
-    
+
     async def callback(self, interaction: Interaction):
         _user = user.User(d_id = self.__d_id, siege_id=str(self.custom_id))
         if interaction.message:
             _view = SeasonsView(_user.player_data, self.__d_id)
             await interaction.response.edit_message(
                 content=f"Stats for {_user.name}",
-                embed = ProfileEmbed(_user.player_data, self.__d_id),
+                embed=ProfileEmbed(_user.player_data, self.__d_id),
                 view=_view
             )
 
@@ -68,16 +67,16 @@ class SearchButton(ui.Button):
 class GitHubButton(ui.Button):
     def __init__(self):
         super().__init__(
-            label="GitHub", 
+            label="GitHub",
             style=ButtonStyle.link,
             url="https://github.com/wiered",
         )
-    
-   
+
+
 class TabstatsButton(ui.Button):
     def __init__(self, url: str):
         super().__init__(
-            label="Tabstats", 
+            label="Tabstats",
             style=ButtonStyle.link,
             url=url,
         )
@@ -92,17 +91,16 @@ class SeasonSelect(ui.Select):
         self.__d_id = d_id
         self.__user_name = str(name)
         self.__user_id = user_id
-        
-    
-    async def callback(self, interaction: Interaction):    
-        _user = user.User(d_id = self.__d_id, siege_id=str(self.__user_id))
-        
+
+    async def callback(self, interaction: Interaction):
+        _user = user.User(d_id=self.__d_id, siege_id=str(self.__user_id))
+
         embed = ProfileEmbed(_user.player_data, self.__d_id, season=self.values[0])
         _view = SeasonsView(_user.player_data, self.__d_id)
-        
+
         if embed:
             await interaction.response.edit_message(
-                embed=embed, 
+                embed=embed,
                 view=_view
             )
 
@@ -111,14 +109,14 @@ class NoSeasonsSelect(ui.Select):
     def __init__(self) -> None:
         super().__init__(
             custom_id="seasons_select",
-            placeholder="No seasons found", 
+            placeholder="No seasons found",
             disabled=True,
             min_values=1,
             max_values=1,
             options=[
                 discord.SelectOption(
-                    label="Dead by Daylight", 
-                    emoji='<:deadbydaylight:848916323962060860>', 
+                    label="Dead by Daylight",
+                    emoji='<:deadbydaylight:848916323962060860>',
                     value='Dead by Daylight'
                     ),
                 ],
@@ -135,9 +133,18 @@ class SeasonsView(ui.View):
         self.d_id = d_id
         super().__init__(timeout=timeout)
         self.generate_seasons_select()
-      
-        
-    def __get_std_select__(self, options: list[SelectOption], placeholder) -> SeasonSelect:
+
+    @staticmethod
+    def gen_season_option(season_slug):
+        _option = SelectOption(
+            label=season_slug.replace("-", " ").capitalize(),
+            value=str(season_slug),
+            emoji="🥕"
+        )
+
+        return _option
+
+    def get_std_select(self, options: list[SelectOption], placeholder) -> SeasonSelect:
         _select = SeasonSelect(
             d_id=self.d_id,
             name=self.player.profile.display_name.replace("-", " ").capitalize(),
@@ -153,48 +160,36 @@ class SeasonsView(ui.View):
 
         return _select
 
-
-    def __gen_season_option__(self, season_slug):
-        _option = SelectOption(
-            label=season_slug.replace("-", " ").capitalize(), 
-            value=str(season_slug),
-            emoji="🥕"
-        )
-        
-        return _option   
-
-
-    def __generate_options__(self):
+    def generate_options(self):
         options = []
         for _season in self.player.seasons:
             options.append(
-                self.__gen_season_option__(
+                self.gen_season_option(
                     _season
                 )
             )
-            
+
         return options
 
-
     def generate_seasons_select(self, season: str = "Current Season"):
-        options = self.__generate_options__()
+        options = self.generate_options()
 
         options.insert(
-            0, 
-            self.__gen_season_option__(
+            0,
+            self.gen_season_option(
                 "Current Season"
             )
         )
-        
+
         self.add_item(
-            self.__get_std_select__(
-                options=options, 
+            self.get_std_select(
+                options=options,
                 placeholder=season.replace("-", " ").capitalize(),
             )
         )
-        
+
         url = self.player.profile.profile_url
-        
+
         self.add_item(TabstatsButton(url))
         self.add_item(GitHubButton())
 
@@ -205,32 +200,32 @@ class SearchButtonsView(ui.View):
         self.search_results = search_results
         self.d_id = d_id
         self.auth = auth
-        self.__generate_buttons__()
-        
-    
-    def __generate_buttons__(self):
+        self.generate_buttons()
+
+    def generate_buttons(self):
         for i in range(len(self.search_results)):
             _button = AuthButton(self.d_id, i, self.search_results[i]) if self.auth else SearchButton(self.d_id, i, self.search_results[i])
             self.add_item(_button)
-       
+
 
 # ========================= #
 # Embeds                    #
-    
+
 class ProfileEmbed(discord.Embed):
     def __init__(self, player: PlayerData, d_id: int, season: str = ""):
         self.player = player
         self.d_id = d_id
         self.season = season
         super().__init__(
-            title="Tabstats", 
+            title="Tabstats",
             url=self.player.profile.profile_url,
             color=0x039BBA
         )
         self.generate_player_embed(season)
-    
-    
-    def __set_defaults__(self):
+
+    def _set_defaults(self):
+        """ Set default emded params
+        """
         self.set_author(
             name=self.player.name,
             url=self.player.profile.profile_url,
@@ -239,7 +234,7 @@ class ProfileEmbed(discord.Embed):
         self.add_field(
             name="General:",
             value="Level **{}**\nPlatform: **{}**".format(
-                self.player.profile.level, 
+                self.player.profile.level,
                 self.player.profile.platform_slug.replace("-", " ").capitalize()
                 ),
             inline=True,
@@ -250,12 +245,11 @@ class ProfileEmbed(discord.Embed):
         )
         self.set_footer(text=default_footer)
 
-
-    def __add_std_fields__(self, record):
+    def _add_std_fields(self, record):
         self.add_field(
             name="MMR:",
             value="**{}**\n{}\nMAX **{}**".format(
-                record.mmr, 
+                record.mmr,
                 f"{record.mmr_point}{record.mmr_change}",
                 record.max_mmr,
                 ),
@@ -272,7 +266,7 @@ class ProfileEmbed(discord.Embed):
         self.add_field(
             name="SeasonalKD:",
             value = "**{}**\nKills **{}**\nDeaths **{}**".format(
-                record.kd, 
+                record.kd,
                 record.kills,
                 record.deaths,
                 ),
@@ -281,7 +275,7 @@ class ProfileEmbed(discord.Embed):
         self.add_field(
             name="SeasonalWL:",
             value="**{}**\nWins **{}**\nLosses **{}**".format(
-                f"{record.wl*100}%", 
+                f"{record.wl*100}%",
                 record.wins,
                 record.losses,
                 ),
@@ -292,31 +286,28 @@ class ProfileEmbed(discord.Embed):
             value="None",
             inline=True,
         )
-        
+
         if self.season != "":
             self.set_thumbnail(url=record.rank_image_url)
             season = record.season_slug.replace("-", " ").capitalize()
             self.set_footer(text=f"{season} • {default_footer}")
 
-    
     def generate_player_embed(self, season: str = ""):
-        # DONE
-        
         """Generate discord embed from user's stats
 
         Args:
-            _json (dict): raw user stats
+            season (dict): season name
 
         Returns:
             Embed: discord embed
         """
-        
+
         record = self.player.current_season_records.ranked
         if season:
             record = self.player.get_season_record(season)
-        
-        embed = self.__set_defaults__()
-        embed = self.__add_std_fields__(record)
+
+        self._set_defaults()
+        self._add_std_fields(record)
 
 
 class SearchEmbed(discord.Embed):
@@ -324,37 +315,36 @@ class SearchEmbed(discord.Embed):
         self.users_list = users_list
         self.search_request = search_request
         super().__init__(color=0x039BBA)
-        
+
         if search_request and users_list:
-            self.__gen_stds__()
-        
+            self.gen_stds()
+
         if not search_request:
             self = NoSearchResultEmbed(search_request="N/A")
-            
+
         if not users_list:
             self = NoSearchResultEmbed(search_request=search_request)
-        
-        
-    def __gen_stds__(self):
+
+    def gen_stds(self):
         self.set_author(name="Search for {}:".format(self.search_request))
         self.set_footer(text=default_footer)
-        
+
         embed_value = "Level: {:3} {:6} Rank: {:10}"
         nbsp = "᲼"
-        for i, user in enumerate(self.users_list):
+        for i, _user in enumerate(self.users_list):
             level = (
-                str(user["level"])+ 
+                str(_user["level"]) +
                 (
-                    3 - len(str(user["level"]))
-                )*nbsp
+                    3 - len(str(_user["level"]))
+                ) * nbsp
             )
             self.add_field(
-                name=f"{i+1}. {user['name']}",
-                value=embed_value.format(level, 4*nbsp, user["rank"]),
+                name=f"{i+1}. {_user['name']}",
+                value=embed_value.format(level, 4 * nbsp, _user["rank"]),
                 inline=False,
             )
 
-            
+
 class AuthorizedEmbed(discord.Embed):
     def __init__(self):
         super().__init__(
@@ -362,8 +352,8 @@ class AuthorizedEmbed(discord.Embed):
             color=0x039BBA
         )
         self.set_footer(text=default_footer)
-        
-        
+
+
 class UnauthorizedEmbed(discord.Embed):
     def __init__(self) -> None:
         super().__init__(
@@ -371,8 +361,8 @@ class UnauthorizedEmbed(discord.Embed):
             color=0x039BBA
         )
         self.set_footer(text=default_footer)
-        
-        
+
+
 class NoSearchResultEmbed(discord.Embed):
     def __init__(self, search_request: str) -> None:
         super().__init__(
