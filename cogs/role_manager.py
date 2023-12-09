@@ -2,11 +2,12 @@ from discord.ext import commands
 from discord.ext import tasks
 
 from core.data import RoleDicts
+from config import Config
 from db.db import users_db
-
 
 class RoleManager(commands.Cog):
     def __init__(self, bot):
+        self.config = Config()
         self.bot = bot
         self.update_roles.start()
         self.save_db.start()
@@ -20,13 +21,15 @@ class RoleManager(commands.Cog):
     async def update_roles(self):
         print("Updating roles...")
         for user in list(users_db.users.values()):
-            guild = self.bot.get_guild(843082437961318400)
+            guild = self.bot.get_guild(self.config.guild_id)
             member = guild.get_member(user.d_id)
             if not member: continue
             
             user.parse_data()
             
-            role_id = RoleDicts.rank_roles.get(user.data.rank)
+            role_id = RoleDicts.get_rank_role(user.data.rank)
+            if role_id == 0: continue
+            
             role = guild.get_role(role_id)
             if role in member.roles: continue
             

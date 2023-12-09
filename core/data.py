@@ -1,3 +1,5 @@
+from config import Config
+
 class RoleDicts:
     ranks_pics = {
         'No matches played this season': 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vMjUyYWRhNjMtNDQzOS00ZmI3LWIzZjktNDY0YWZlNTA3MGY2.webp',
@@ -62,64 +64,47 @@ class RoleDicts:
         'champion' : 'https://img.apitab.com/plain/quality:50/resize:fit:0:250/bG9jYWw6Ly8vZTFmYzZlYjItOGM1OS00OTY2LWE0OTgtZjBiMTQ0MDEwMGMw.webp',  
     }
     
+    config = Config()
+    config.read_roles()
+    
     rank_roles = {
-        'No matches played this season': 1043964562967384104,
-        'no matches played this season': 1043964562967384104,
-        'Not played': 1043964562967384104,
-        'not played': 1043964562967384104,
-        'Unranked' : 1043964562967384104,
-        'unranked' : 1043964562967384104,
-        'N/A'      : 1043964562967384104,
+        'No matches played this season': config.unranked,
+        'no matches played this season': config.unranked,
+        'Not played': config.unranked,
+        'not played': config.unranked,
+        'Unranked' : config.unranked,
+        'unranked' : config.unranked,
+        'N/A'      : config.unranked,
         
-        'Copper'   : 1032729862923898914,
-        'copper-1' : 1032729862923898914,
-        'copper-2' : 1032729862923898914,
-        'copper-3' : 1032729862923898914,
-        'copper-4' : 1032729862923898914,
-        'copper-5' : 1032729862923898914,
-
-        'Bronze'   : 1032729713724112979,
-        'bronze-1' : 1032729713724112979,
-        'bronze-2' : 1032729713724112979,
-        'bronze-3' : 1032729713724112979,
-        'bronze-4' : 1032729713724112979,
-        'bronze-5' : 1032729713724112979,
-
-        'Silver'   : 1032729502431854642,
-        'silver-1' : 1032729502431854642,
-        'silver-2' : 1032729502431854642,
-        'silver-3' : 1032729502431854642,
-        'silver-4' : 1032729502431854642,
-        'silver-5' : 1032729502431854642,
-
-        'Gold'   : 1032729390179696772,
-        'gold-1' : 1032729390179696772,
-        'gold-2' : 1032729390179696772,
-        'gold-3' : 1032729390179696772, 
-
-        'Platinum'   : 1032729198822948874,
-        'platinum-1' : 1032729198822948874,
-        'platinum-2' : 1032729198822948874,
-        'platinum-3' : 1032729198822948874,
-
-        'Diamond'   : 1029335924712144937,
-        'diamond-1' : 1029335924712144937,
-        'diamond-2' : 1029335924712144937,
-        'diamond-3' : 1029335924712144937,
-        
-        'Champion' : 1029335755543302184,
-        'champion' : 1029335755543302184,
+        'copper'   : config.copper,
+        'bronze'   : config.bronze,
+        'silver'   : config.silver,
+        'gold'   : config.gold,
+        'platinum'   : config.platinum,
+        'emerald' : config.emerald,
+        'diamond'   : config.diamond,
+        'Champion' : config.champion,
     }
     
     rank_roles_ids = [
-        1043964562967384104,
-        1032729862923898914,
-        1032729713724112979,
-        1032729502431854642,
-        1032729502431854642,
-        1032729390179696772,
-        1032729198822948874,
-        1029335924712144937,
-        1029335755543302184,
+        config.unranked,
+        config.copper,
+        config.bronze,
+        config.silver,
+        config.silver,
+        config.gold,
+        config.platinum,
+        config.emerald,
+        config.diamond,
+        config.champion,
     ]
+    
+    @staticmethod
+    def get_rank_role(rank):
+        _rank = rank.lower()
+        _rank = _rank.replace(' ', '').replace('-', '')
+        for i in range(5):
+            _rank = _rank.replace(str(i+1), '')
+        
+        return RoleDicts.rank_roles.get(_rank)
     
