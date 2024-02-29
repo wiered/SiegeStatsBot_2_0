@@ -9,13 +9,11 @@ from db.db import users_db
 
 
 class HubTree(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        
-    
     hub_group = app_commands.Group(name="hub", description="Hub commands")
     sielent = app_commands.Group(name="sielent", description="Sielent mode")
     
+    def __init__(self, bot):
+        self.bot = bot
     
     @hub_group.command(name="stats", description="Get siege stats")
     async def stats(self,ctx, name:str=""):
@@ -29,7 +27,6 @@ class HubTree(commands.Cog):
             return await self.__get_self_stats__(ctx, ephemeral=True)
         return await self.__get_search_results__(ctx, name, auth=False, ephemeral=True)
         
-        
     @hub_group.command(name="authorize", description="Authorize your account")
     async def auth(self, interaction: Interaction, name: str) -> None:
         if not name or len(name) < 3:
@@ -39,7 +36,6 @@ class HubTree(commands.Cog):
             return await interaction.response.send_message(embed=ui_cogs.AuthorizedEmbed(), ephemeral=True)
         
         await self.__get_search_results__(interaction, name, auth=True, ephemeral=True)
-        
     
     async def __get_search_results__(self, interaction: Interaction, name, auth: bool = False, ephemeral: bool = False):
         with parser.Parser() as p:
@@ -47,7 +43,6 @@ class HubTree(commands.Cog):
             embed = ui_cogs.SearchEmbed(search_results, name)
             view = ui_cogs.SearchButtonsView(search_results, interaction.user.id, auth)
             await interaction.response.send_message(embed=embed, view=view, delete_after=1800, ephemeral=ephemeral)
-    
     
     async def __get_self_stats__(self, interaction: Interaction, ephemeral: bool = False):
         _user = users_db.get_user(interaction.user.id)
