@@ -1,5 +1,6 @@
-# R6Hub discord bot
+# Tabstats died, so bot is broken :(
 
+## R6Hub discord bot
 Retrieve and View Rainbow Six: Siege Stats from tabstats.com in Discord Servers
 
 <img src="preview.png" alt="He's champ now... How much time has passed..." width="275.666" height="231.666" border="10" />
