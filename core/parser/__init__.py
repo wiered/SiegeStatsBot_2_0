@@ -7,7 +7,6 @@ class Parser(requests.Session):
 
         # API Links
         self.__tabstats_search_api_url = "https://r6.apitab.net/website/search"
-        self.__stats_cc_search_api_url = "https://r6.stats.cc/v2/profiles/search?username={}&platform=pc&include_aliases=true&limit=10"
         self.__tabstats_profie_api_url = "https://r6.apitab.net/website/profiles/{}"
 
         # init super class
