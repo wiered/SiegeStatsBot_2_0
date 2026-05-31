@@ -2,9 +2,6 @@ import discord
 
 from discord import Interaction, ui
 from discord import ButtonStyle, SelectOption
-from discord import Embed
-from discord import ui
-from discord.ui import Select
 
 from core import user
 from core.player_data import PlayerData
@@ -19,13 +16,13 @@ default_footer = "R6HubBot • https://github.com/wiered"
 class AuthButton(ui.Button):
     def __init__(self, d_id: int, i, _, *args, **kwargs):
         super().__init__(
-            label=str(i+1),
+            label=str(i + 1),
             custom_id=_.get("id"),
             style=ButtonStyle.green,
-            row=i//4,
+            row=i // 4,
             *args,
-            **kwargs
-            )
+            **kwargs,
+        )
         self.__d_id = d_id
 
     async def callback(self, interaction: Interaction):
@@ -37,30 +34,30 @@ class AuthButton(ui.Button):
             await interaction.response.edit_message(
                 content=f"Authorized as {_user.name}",
                 embed=ProfileEmbed(_user.player_data, self.__d_id),
-                view=_view
+                view=_view,
             )
 
 
 class SearchButton(ui.Button):
     def __init__(self, d_id: int, i, _, *args, **kwargs):
         super().__init__(
-            label=str(i+1),
+            label=str(i + 1),
             custom_id=_.get("id"),
             style=ButtonStyle.green,
-            row=i//4,
+            row=i // 4,
             *args,
-            **kwargs
-            )
+            **kwargs,
+        )
         self.__d_id = d_id
 
     async def callback(self, interaction: Interaction):
-        _user = user.User(d_id = self.__d_id, siege_id=str(self.custom_id))
+        _user = user.User(d_id=self.__d_id, siege_id=str(self.custom_id))
         if interaction.message:
             _view = SeasonsView(_user.player_data, self.__d_id)
             await interaction.response.edit_message(
                 content=f"Stats for {_user.name}",
                 embed=ProfileEmbed(_user.player_data, self.__d_id),
-                view=_view
+                view=_view,
             )
 
 
@@ -85,6 +82,7 @@ class TabstatsButton(ui.Button):
 # ========================= #
 # Selects                   #
 
+
 class SeasonSelect(ui.Select):
     def __init__(self, d_id: int, name, user_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -99,10 +97,7 @@ class SeasonSelect(ui.Select):
         _view = SeasonsView(_user.player_data, self.__d_id)
 
         if embed:
-            await interaction.response.edit_message(
-                embed=embed,
-                view=_view
-            )
+            await interaction.response.edit_message(embed=embed, view=_view)
 
 
 class NoSeasonsSelect(ui.Select):
@@ -116,16 +111,17 @@ class NoSeasonsSelect(ui.Select):
             options=[
                 discord.SelectOption(
                     label="Dead by Daylight",
-                    emoji='<:deadbydaylight:848916323962060860>',
-                    value='Dead by Daylight'
-                    ),
-                ],
-            row=0
+                    emoji="<:deadbydaylight:848916323962060860>",
+                    value="Dead by Daylight",
+                ),
+            ],
+            row=0,
         )
 
 
 # ========================= #
 # Views                     #
+
 
 class SeasonsView(ui.View):
     def __init__(self, player, d_id: int, timeout: float = 180):
@@ -139,7 +135,7 @@ class SeasonsView(ui.View):
         _option = SelectOption(
             label=season_slug.replace("-", " ").capitalize(),
             value=str(season_slug),
-            emoji="🥕"
+            emoji="🥕",
         )
 
         return _option
@@ -155,7 +151,7 @@ class SeasonsView(ui.View):
             min_values=1,
             max_values=1,
             row=0,
-            options=options
+            options=options,
         )
 
         return _select
@@ -163,23 +159,14 @@ class SeasonsView(ui.View):
     def generate_options(self):
         options = []
         for _season in self.player.seasons:
-            options.append(
-                self.gen_season_option(
-                    _season
-                )
-            )
+            options.append(self.gen_season_option(_season))
 
         return options
 
     def generate_seasons_select(self, season: str = "Current Season"):
         options = self.generate_options()
 
-        options.insert(
-            0,
-            self.gen_season_option(
-                "Current Season"
-            )
-        )
+        options.insert(0, self.gen_season_option("Current Season"))
 
         self.add_item(
             self.get_std_select(
@@ -195,7 +182,7 @@ class SeasonsView(ui.View):
 
 
 class SearchButtonsView(ui.View):
-    def __init__(self, search_results: list, d_id: int, auth = False):
+    def __init__(self, search_results: list, d_id: int, auth=False):
         super().__init__(timeout=180)
         self.search_results = search_results
         self.d_id = d_id
@@ -204,12 +191,17 @@ class SearchButtonsView(ui.View):
 
     def generate_buttons(self):
         for i in range(len(self.search_results)):
-            _button = AuthButton(self.d_id, i, self.search_results[i]) if self.auth else SearchButton(self.d_id, i, self.search_results[i])
+            _button = (
+                AuthButton(self.d_id, i, self.search_results[i])
+                if self.auth
+                else SearchButton(self.d_id, i, self.search_results[i])
+            )
             self.add_item(_button)
 
 
 # ========================= #
 # Embeds                    #
+
 
 class ProfileEmbed(discord.Embed):
     def __init__(self, player: PlayerData, d_id: int, season: str = ""):
@@ -217,15 +209,12 @@ class ProfileEmbed(discord.Embed):
         self.d_id = d_id
         self.season = season
         super().__init__(
-            title="Tabstats",
-            url=self.player.profile.profile_url,
-            color=0x039BBA
+            title="Tabstats", url=self.player.profile.profile_url, color=0x039BBA
         )
         self.generate_player_embed(season)
 
     def _set_defaults(self):
-        """ Set default emded params
-        """
+        """Set default emded params"""
         self.set_author(
             name=self.player.name,
             url=self.player.profile.profile_url,
@@ -235,14 +224,12 @@ class ProfileEmbed(discord.Embed):
             name="General:",
             value="Level **{}**\nPlatform: **{}**".format(
                 self.player.profile.level,
-                self.player.profile.platform_slug.replace("-", " ").capitalize()
-                ),
+                self.player.profile.platform_slug.replace("-", " ").capitalize(),
+            ),
             inline=True,
         )
 
-        self.set_thumbnail(
-            url=self.player.current_season_records.ranked.rank_image_url
-        )
+        self.set_thumbnail(url=self.player.current_season_records.ranked.rank_image_url)
         self.set_footer(text=default_footer)
 
     def _add_std_fields(self, record):
@@ -252,7 +239,7 @@ class ProfileEmbed(discord.Embed):
                 record.mmr,
                 f"{record.mmr_point}{record.mmr_change}",
                 record.max_mmr,
-                ),
+            ),
             inline=True,
         )
         self.add_field(
@@ -260,25 +247,25 @@ class ProfileEmbed(discord.Embed):
             value="**{}**\nMax **{}**".format(
                 record.rank_slug.replace("-", " ").capitalize(),
                 record.max_rank_slug.replace("-", " ").capitalize(),
-                ),
+            ),
             inline=True,
         )
         self.add_field(
             name="SeasonalKD:",
-            value = "**{}**\nKills **{}**\nDeaths **{}**".format(
+            value="**{}**\nKills **{}**\nDeaths **{}**".format(
                 record.kd,
                 record.kills,
                 record.deaths,
-                ),
+            ),
             inline=True,
         )
         self.add_field(
             name="SeasonalWL:",
             value="**{}**\nWins **{}**\nLosses **{}**".format(
-                f"{record.wl*100}%",
+                f"{record.wl * 100}%",
                 record.wins,
                 record.losses,
-                ),
+            ),
             inline=True,
         )
         self.add_field(
@@ -332,14 +319,9 @@ class SearchEmbed(discord.Embed):
         embed_value = "Level: {:3} {:6} Rank: {:10}"
         nbsp = "᲼"
         for i, _user in enumerate(self.users_list):
-            level = (
-                str(_user["level"]) +
-                (
-                    3 - len(str(_user["level"]))
-                ) * nbsp
-            )
+            level = str(_user["level"]) + (3 - len(str(_user["level"]))) * nbsp
             self.add_field(
-                name=f"{i+1}. {_user['name']}",
+                name=f"{i + 1}. {_user['name']}",
                 value=embed_value.format(level, 4 * nbsp, _user["rank"]),
                 inline=False,
             )
@@ -347,26 +329,19 @@ class SearchEmbed(discord.Embed):
 
 class AuthorizedEmbed(discord.Embed):
     def __init__(self):
-        super().__init__(
-            title="You alredy authorized!",
-            color=0x039BBA
-        )
+        super().__init__(title="You alredy authorized!", color=0x039BBA)
         self.set_footer(text=default_footer)
 
 
 class UnauthorizedEmbed(discord.Embed):
     def __init__(self) -> None:
-        super().__init__(
-            title="No such user in base!",
-            color=0x039BBA
-        )
+        super().__init__(title="No such user in base!", color=0x039BBA)
         self.set_footer(text=default_footer)
 
 
 class NoSearchResultEmbed(discord.Embed):
     def __init__(self, search_request: str) -> None:
         super().__init__(
-            title=f"No results found for \"{search_request}\"!",
-            color=0x039BBA
+            title=f'No results found for "{search_request}"!', color=0x039BBA
         )
         self.set_footer(text=default_footer)

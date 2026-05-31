@@ -8,18 +8,19 @@ try:
 except ImportError:
     Fore = Style = type("Dummy", (object,), {"__getattr__": lambda self, item: ""})()
 
+
 class HubLogger(logging.Logger):
     @staticmethod
     def _debug_(*msgs):
-        return f'{Fore.CYAN}{" ".join(msgs)}{Style.RESET_ALL}'
+        return f"{Fore.CYAN}{' '.join(msgs)}{Style.RESET_ALL}"
 
     @staticmethod
     def _info_(*msgs):
-        return f'{Fore.LIGHTMAGENTA_EX}{" ".join(msgs)}{Style.RESET_ALL}'
+        return f"{Fore.LIGHTMAGENTA_EX}{' '.join(msgs)}{Style.RESET_ALL}"
 
     @staticmethod
     def _error_(*msgs):
-        return f'{Fore.RED}{" ".join(msgs)}{Style.RESET_ALL}'
+        return f"{Fore.RED}{' '.join(msgs)}{Style.RESET_ALL}"
 
     def debug(self, msg, *args, **kwargs):
         if self.isEnabledFor(logging.DEBUG):
@@ -51,10 +52,14 @@ class HubLogger(logging.Logger):
         if self.isEnabledFor(level):
             self._log(
                 level,
-                Fore.BLACK + Style.BRIGHT + "-------------------------" + Style.RESET_ALL,
+                Fore.BLACK
+                + Style.BRIGHT
+                + "-------------------------"
+                + Style.RESET_ALL,
                 [],
             )
-            
+
+
 logging.setLoggerClass(HubLogger)
 log_level = logging.ERROR
 loggers = set()
@@ -62,7 +67,8 @@ loggers = set()
 ch = logging.StreamHandler(stream=sys.stdout)
 ch.setLevel(log_level)
 formatter = logging.Formatter(
-    "%(asctime)s %(name)s[%(lineno)d] - %(levelname)s: %(message)s", datefmt="%m/%d/%y %H:%M:%S"
+    "%(asctime)s %(name)s[%(lineno)d] - %(levelname)s: %(message)s",
+    datefmt="%m/%d/%y %H:%M:%S",
 )
 ch.setFormatter(formatter)
 
@@ -85,11 +91,13 @@ class FileFormatter(logging.Formatter):
     def format(self, record):
         record.msg = self.ansi_escape.sub("", record.msg)
         return super().format(record)
-    
+
 
 def configure_logging(name, level=None):
     global ch_debug, log_level
-    ch_debug = RotatingFileHandler(name, mode="a+", maxBytes=48000, backupCount=1, encoding="utf-8")
+    ch_debug = RotatingFileHandler(
+        name, mode="a+", maxBytes=48000, backupCount=1, encoding="utf-8"
+    )
 
     formatter_debug = FileFormatter(
         "%(asctime)s %(name)s[%(lineno)d] - %(levelname)s: %(message)s",

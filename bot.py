@@ -21,7 +21,7 @@ class R6HubBot(commands.Bot):
         self.loaded_cogs = [
             "cogs.siegestats",
             "cogs.slash_commands",
-            "cogs.role_manager"
+            "cogs.role_manager",
         ]
         self.start_time = datetime.utcnow()
         print("Bot is ready!")
@@ -58,7 +58,7 @@ async def main():
 
     async with bot:
         bot.tree.copy_global_to(guild=discord.Object(id=config.guild_id))
-        
+
         await bot.start(config.token)
 
 

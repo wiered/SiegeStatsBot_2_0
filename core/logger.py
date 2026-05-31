@@ -11,7 +11,7 @@ temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
 if not os.path.exists(temp_dir):
     os.mkdir(temp_dir)
 
-log_file_name = os.path.join(temp_dir, f"app.log")
+log_file_name = os.path.join(temp_dir, "app.log")
 
 logger = getLogger(__name__)
 
@@ -37,17 +37,19 @@ logger.debug("Successfully configured logging.")
 
 
 def setup_logger__():
-    logger = logging.getLogger('discord')
+    logger = logging.getLogger("discord")
     logger.setLevel(logging.INFO)
-    logging.getLogger('discord.http').setLevel(logging.INFO)
+    logging.getLogger("discord.http").setLevel(logging.INFO)
 
     handler = logging.handlers.RotatingFileHandler(
-        filename='discord.log',
-        encoding='utf-8',
+        filename="discord.log",
+        encoding="utf-8",
         maxBytes=32 * 1024 * 1024,  # 32 MiB
         backupCount=5,  # Rotate through 5 files
     )
-    dt_fmt = '%Y-%m-%d %H:%M:%S'
-    formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+    dt_fmt = "%Y-%m-%d %H:%M:%S"
+    formatter = logging.Formatter(
+        "[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{"
+    )
     handler.setFormatter(formatter)
-    logger.addHandler(handler) 
+    logger.addHandler(handler)
