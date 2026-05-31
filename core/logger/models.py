@@ -1,12 +1,23 @@
 import logging
-import sys
 import re
+import sys
 from logging.handlers import RotatingFileHandler
+from typing import Any, cast
 
 try:
-    from colorama import Fore, Style
+    from colorama import Fore as _Fore
+    from colorama import Style as _Style
+
+    Fore: Any = _Fore
+    Style: Any = _Style
 except ImportError:
-    Fore = Style = type("Dummy", (object,), {"__getattr__": lambda self, item: ""})()
+
+    class _Dummy:
+        def __getattr__(self, item: str) -> str:
+            return ""
+
+    Fore: Any = _Dummy()
+    Style: Any = _Dummy()
 
 
 class HubLogger(logging.Logger):
@@ -56,7 +67,7 @@ class HubLogger(logging.Logger):
                 + Style.BRIGHT
                 + "-------------------------"
                 + Style.RESET_ALL,
-                [],
+                (),
             )
 
 
@@ -76,7 +87,7 @@ ch_debug = None
 
 
 def getLogger(name=None) -> HubLogger:
-    logger = logging.getLogger(name)
+    logger = cast(HubLogger, logging.getLogger(name))
     logger.setLevel(log_level)
     logger.addHandler(ch)
     if ch_debug is not None:

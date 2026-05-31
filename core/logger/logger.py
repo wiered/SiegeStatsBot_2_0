@@ -2,7 +2,7 @@ import logging
 import logging.handlers
 import os
 
-from core.models import (
+from .models import (
     configure_logging,
     getLogger,
 )
