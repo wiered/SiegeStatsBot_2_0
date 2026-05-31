@@ -4,4 +4,17 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "aiohttp>=3.13.5",
+    "discord-py==2.1.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.1",
+    "requests>=2.34.2",
+]
+
+[dependency-groups]
+dev = [
+    "pydoclint>=0.8.4",
+    "ruff>=0.15.15",
+    "ty>=0.0.40",
+]
