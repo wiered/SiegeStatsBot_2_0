@@ -1,25 +1,50 @@
 import logging
+import json
 from pathlib import Path
 
+import redis
+from redis.exceptions import RedisError
 
+from config import Config
 from core import csv_addon, parser, type_helpers
 from core.player_data import PlayerData
 from core.player_data_models import NormalizedPlayerData
 
 USERS_CSV_PATH = Path(__file__).resolve().parents[1] / "db" / "users.csv"
+USERS_REDIS_INDEX_KEY = "users:v1:index"
+USERS_REDIS_KEY_PREFIX = "users:v1:user:"
 
 
 class UsersVault:
     def __init__(self):
-        self.__users = {}
+        self.__redis: redis.Redis | None = None
+
+    @property
+    def redis(self) -> redis.Redis | None:
+        if self.__redis is not None:
+            return self.__redis
+
+        try:
+            config = Config()
+            if not config.redis_enabled:
+                return None
+
+            client = redis.from_url(config.redis_url, decode_responses=True)
+            client.ping()
+        except (OSError, RedisError, ValueError):
+            logging.exception("Redis users storage is unavailable")
+            return None
+
+        self.__redis = client
+        return self.__redis
 
     @property
     def users(self) -> dict:
-        return self.__users
+        return self.__load_users_from_redis__()
 
     @property
     def keys(self):
-        return self.__users.keys()
+        return self.__load_user_ids_from_redis__()
 
     def add_user(self, user):
         """Add user to UsersVault
@@ -28,27 +53,25 @@ class UsersVault:
             user (User): User object
         """
 
-        self.__users.update({int(user.d_id): user})
+        self.__save_user_to_redis__(user)
 
     def load_instance_from_csv(self):
-        """Instantiate UsersVault from csv
+        """Instantiate UsersVault from Redis, then migrate legacy csv if needed.
 
         Raises:
             FileNotFoundError: if csv file not found
         """
 
-        self.__users.clear()
-        logging.info("Instantiating from csv")
-        self.__load_users__()
+        logging.info("Instantiating users from Redis")
+        if not self.users:
+            self.__load_users__()
         logging.info("Users loaded")
 
     def save_instance_to_csv(self):
-        """Save all authorized users to csv"""
+        """Persist all authorized users to Redis."""
 
-        users_data = []
-        for user in self.__users.values():
-            users_data.append(self.__generate_user_data__(user))
-        csv_addon.write_to_csv(USERS_CSV_PATH, users_data)
+        for user in self.iter_users():
+            self.__save_user_to_redis__(user)
         logging.info("All userdata saved")
 
     def get_user(self, d_id: int):
@@ -61,7 +84,8 @@ class UsersVault:
             User: User object
         """
 
-        return self.__users.get(d_id)
+        d_id = int(d_id)
+        return self.__load_user_from_redis__(d_id)
 
     def delete_by_dID(self, d_id: int) -> None:
         """Delete user by his discord ID
@@ -70,7 +94,16 @@ class UsersVault:
             d_id (int): user's discord ID
         """
 
-        del self.__users[d_id]
+        d_id = int(d_id)
+        client = self.redis
+        if client is None:
+            return
+
+        try:
+            client.delete(self.__get_redis_user_key__(d_id))
+            client.srem(USERS_REDIS_INDEX_KEY, str(d_id))
+        except RedisError:
+            logging.exception("Failed to delete user %s from Redis", d_id)
 
     def is_authorized(self, d_id: int) -> bool:
         """Check if user is authorized
@@ -82,7 +115,88 @@ class UsersVault:
             bool: True if user is authorized, False otherwise
         """
 
-        return self.__users.get(d_id) is not None
+        return self.get_user(d_id) is not None
+
+    def iter_users(self):
+        """Yield authorized users from Redis without retaining them in memory."""
+
+        yield from self.__load_users_from_redis__().values()
+
+    def __load_users_from_redis__(self) -> dict[int, "User"]:
+        """Load all authorized users from Redis."""
+
+        client = self.redis
+        if client is None:
+            return {}
+
+        d_ids = self.__load_user_ids_from_redis__()
+
+        users: dict[int, User] = {}
+        for d_id in d_ids:
+            user = self.__load_user_from_redis__(d_id)
+            if user is not None:
+                users[user.d_id] = user
+
+        logging.info("Users loaded from Redis")
+        return users
+
+    def __load_user_ids_from_redis__(self) -> set[int]:
+        client = self.redis
+        if client is None:
+            return set()
+
+        try:
+            return {int(d_id) for d_id in client.smembers(USERS_REDIS_INDEX_KEY)}
+        except (RedisError, ValueError):
+            logging.exception("Failed to load users index from Redis")
+            return set()
+
+    def __load_user_from_redis__(self, d_id: int):
+        client = self.redis
+        if client is None:
+            return None
+
+        try:
+            raw_user = client.get(self.__get_redis_user_key__(d_id))
+        except RedisError:
+            logging.exception("Failed to load user %s from Redis", d_id)
+            return None
+
+        if raw_user is None:
+            return None
+
+        try:
+            user_data = json.loads(raw_user)
+        except json.JSONDecodeError:
+            logging.exception("Invalid Redis user payload for %s", d_id)
+            return None
+
+        return User(
+            siege_id=str(user_data.get("siege_id", "")),
+            d_id=type_helpers.get_d_id(user_data),
+        )
+
+    def __save_user_to_redis__(self, user) -> None:
+        client = self.redis
+        if client is None:
+            return
+
+        key = self.__get_redis_user_key__(user.d_id)
+        raw_user = json.dumps(
+            self.__generate_user_data__(user),
+            separators=(",", ":"),
+            ensure_ascii=False,
+        )
+        try:
+            client.set(key, raw_user)
+            client.persist(key)
+            client.sadd(USERS_REDIS_INDEX_KEY, str(user.d_id))
+            client.persist(USERS_REDIS_INDEX_KEY)
+        except RedisError:
+            logging.exception("Failed to save user %s to Redis", user.d_id)
+
+    def __get_redis_user_key__(self, d_id: int) -> str:
+        return f"{USERS_REDIS_KEY_PREFIX}{int(d_id)}"
 
     def __load_users__(self):
         """Load all authorized users from csv"""

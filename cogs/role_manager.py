@@ -19,7 +19,7 @@ class RoleManager(commands.Cog):
     @tasks.loop(hours=1)
     async def update_roles(self):
         print("Updating roles...")
-        for user in list(users_db.users.values()):
+        for user in users_db.iter_users():
             guild = self.bot.get_guild(self.config.guild_id)
             member = guild.get_member(user.d_id)
             if not member:
