@@ -79,6 +79,57 @@ def test_stats_response_requires_data_container() -> None:
         StatsResponse.model_validate({})
 
 
+def test_stats_response_normalizes_raw_platform_profile_payload() -> None:
+    response = StatsResponse.model_validate(
+        {
+            "platform_families_full_profiles": [
+                {
+                    "profile_id": "profile-id",
+                    "board_ids_full_profiles": [
+                        {
+                            "board_id": "ranked",
+                            "full_profiles": [
+                                {
+                                    "profile": {
+                                        "wins": 82,
+                                        "kills": 1014,
+                                        "deaths": 719,
+                                        "losses": 83,
+                                        "abandon": 6,
+                                        "rank_points": 4435,
+                                        "max_rank_points": 4501,
+                                    },
+                                    "season_id": 41,
+                                    "season_statistics": {
+                                        "kills": 1014,
+                                        "deaths": 719,
+                                        "match_outcomes": {
+                                            "wins": 82,
+                                            "losses": 83,
+                                            "abandons": 6,
+                                        },
+                                    },
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+    )
+
+    assert response.data.metadata.current_season == 41
+    segment = response.data.segments[0]
+    assert segment.attributes.session_type == "ranked"
+    assert segment.attributes.gamemode == "pvp_ranked"
+    assert segment.stats.kills is not None
+    assert segment.stats.kills.value == 1014
+    assert segment.stats.matches_played is not None
+    assert segment.stats.matches_played.value == 171
+    assert segment.stats.rank_points is not None
+    assert segment.stats.rank_points.value == 4435
+
+
 def test_seasonal_stats_fixtures_validate() -> None:
     seasonal_response = SeasonalStatsResponse.model_validate(
         load_fixture("seasonal_data.json")

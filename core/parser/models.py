@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class R6DataModel(BaseModel):
@@ -92,6 +94,130 @@ class StatsData(R6DataModel):
 
 class StatsResponse(R6DataModel):
     data: StatsData
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_stats_payload(cls, value: Any) -> Any:
+        if not isinstance(value, dict) or "data" in value:
+            return value
+
+        if {"metadata", "segments", "platformInfo"} & value.keys():
+            return {"data": value}
+
+        normalized_data = _normalize_raw_platform_stats(value)
+        if normalized_data is None:
+            return value
+        return {"data": normalized_data}
+
+
+def _normalize_raw_platform_stats(value: dict[str, Any]) -> dict[str, Any] | None:
+    platform_profiles = value.get("platform_families_full_profiles")
+    if not isinstance(platform_profiles, list):
+        return None
+
+    segments: list[dict[str, Any]] = []
+    current_season: int | None = None
+    for platform_profile in platform_profiles:
+        if not isinstance(platform_profile, dict):
+            continue
+        boards = platform_profile.get("board_ids_full_profiles")
+        if not isinstance(boards, list):
+            continue
+
+        for board in boards:
+            if not isinstance(board, dict):
+                continue
+            session_type = _normalize_raw_board_id(board.get("board_id"))
+            full_profiles = board.get("full_profiles")
+            if not isinstance(full_profiles, list):
+                continue
+
+            for full_profile in full_profiles:
+                if not isinstance(full_profile, dict):
+                    continue
+                season_id = _to_int_or_none(full_profile.get("season_id"))
+                if session_type == "ranked" and current_season is None:
+                    current_season = season_id
+                segments.append(
+                    {
+                        "type": "season",
+                        "stats": _normalize_raw_stats(full_profile),
+                        "metadata": {},
+                        "attributes": {
+                            "season": season_id,
+                            "gamemode": f"pvp_{session_type}",
+                            "sessionType": session_type,
+                            "region": "global",
+                        },
+                    }
+                )
+
+    return {"metadata": {"currentSeason": current_season}, "segments": segments}
+
+
+def _normalize_raw_stats(full_profile: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    profile = _dict_or_empty(full_profile.get("profile"))
+    season_statistics = _dict_or_empty(full_profile.get("season_statistics"))
+    match_outcomes = _dict_or_empty(season_statistics.get("match_outcomes"))
+
+    kills = _first_value(season_statistics, profile, "kills")
+    deaths = _first_value(season_statistics, profile, "deaths")
+    wins = _first_value(match_outcomes, profile, "wins")
+    losses = _first_value(match_outcomes, profile, "losses")
+    abandons = _first_value(match_outcomes, profile, "abandons", "abandon")
+    played = sum(_to_int_or_zero(value) for value in (wins, losses, abandons))
+
+    return {
+        "kills": _stat_value(kills),
+        "deaths": _stat_value(deaths),
+        "kdRatio": _stat_value(_kd_ratio(kills, deaths)),
+        "matchesWon": _stat_value(wins),
+        "matchesLost": _stat_value(losses),
+        "matchesPlayed": _stat_value(played),
+        "rankPoints": _stat_value(profile.get("rank_points")),
+        "maxRankPoints": _stat_value(profile.get("max_rank_points")),
+    }
+
+
+def _normalize_raw_board_id(value: Any) -> str:
+    board_id = value if isinstance(value, str) else ""
+    return board_id or "ranked"
+
+
+def _dict_or_empty(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _first_value(*sources: dict[str, Any] | str) -> Any:
+    keys = [source for source in sources if isinstance(source, str)]
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        for key in keys:
+            if key in source:
+                return source[key]
+    return None
+
+
+def _stat_value(value: Any) -> dict[str, Any]:
+    return {"value": 0 if value is None else value}
+
+
+def _kd_ratio(kills: Any, deaths: Any) -> float:
+    death_count = _to_int_or_zero(deaths)
+    if death_count == 0:
+        return 0.0
+    return _to_int_or_zero(kills) / death_count
+
+
+def _to_int_or_none(value: Any) -> int | None:
+    if value is None:
+        return None
+    return int(value)
+
+
+def _to_int_or_zero(value: Any) -> int:
+    return _to_int_or_none(value) or 0
 
 
 class SeasonalRankMetadata(R6DataModel):
