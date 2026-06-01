@@ -1,4 +1,22 @@
-import configparser
+import os
+
+
+def _get_env_str(name: str, default: str = "") -> str:
+    return os.environ.get(name, default)
+
+
+def _get_env_int(name: str, default: int = 0) -> int:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return int(value)
+
+
+def _get_env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 class Config:
@@ -42,43 +60,27 @@ class Config:
         return self._redis_enabled
 
     def read_config(self):
-        with open("./config/config.ini", "r") as config_file:
-            config = configparser.ConfigParser()
-            config.read_file(config_file)
-            self._token = config.get("DEFAULT", "token")
-            self._log_level = config.get("DEFAULT", "log_level")
-            self._guild_id = int(config.get("DEFAULT", "guild_id"))
-            self._r6data_api_key = config.get(
-                "DEFAULT",
-                "r6data_api_key",
-                fallback=config.get("DEFAULT", "r6data_token", fallback=""),
-            )
-            self._redis_url = config.get(
-                "REDIS",
-                "redis_url",
-                fallback="redis://localhost:6379/0",
-            )
-            self._redis_cache_ttl_seconds = config.getint(
-                "REDIS",
-                "redis_cache_ttl_seconds",
-                fallback=900,
-            )
-            self._redis_enabled = config.getboolean(
-                "REDIS",
-                "redis_enabled",
-                fallback=True,
-            )
+        self._token = _get_env_str("TOKEN")
+        self._log_level = _get_env_str("LOG_LEVEL", "INFO")
+        self._guild_id = _get_env_int("GUILD_ID")
+        self._r6data_api_key = _get_env_str(
+            "R6DATA_API_KEY",
+            default=_get_env_str("R6DATA_TOKEN"),
+        )
+        self._redis_url = _get_env_str("REDIS_URL", "redis://localhost:6379/0")
+        self._redis_cache_ttl_seconds = _get_env_int(
+            "REDIS_CACHE_TTL_SECONDS",
+            default=900,
+        )
+        self._redis_enabled = _get_env_bool("REDIS_ENABLED", default=True)
 
     def read_roles(self):
-        with open("./config/config.ini", "r") as config_file:
-            config = configparser.ConfigParser()
-            config.read_file(config_file)
-            self.unranked = int(config.get("ROLES", "Unranked"))
-            self.copper = int(config.get("ROLES", "Copper"))
-            self.bronze = int(config.get("ROLES", "Bronze"))
-            self.silver = int(config.get("ROLES", "Silver"))
-            self.gold = int(config.get("ROLES", "Gold"))
-            self.platinum = int(config.get("ROLES", "Platinum"))
-            self.emerald = int(config.get("ROLES", "Emerald"))
-            self.diamond = int(config.get("ROLES", "Diamond"))
-            self.champion = int(config.get("ROLES", "Champion"))
+        self.unranked = _get_env_int("ROLE_UNRANKED")
+        self.copper = _get_env_int("ROLE_COPPER")
+        self.bronze = _get_env_int("ROLE_BRONZE")
+        self.silver = _get_env_int("ROLE_SILVER")
+        self.gold = _get_env_int("ROLE_GOLD")
+        self.platinum = _get_env_int("ROLE_PLATINUM")
+        self.emerald = _get_env_int("ROLE_EMERALD")
+        self.diamond = _get_env_int("ROLE_DIAMOND")
+        self.champion = _get_env_int("ROLE_CHAMPION")

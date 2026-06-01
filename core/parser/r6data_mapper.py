@@ -139,7 +139,9 @@ def map_player(
 
     current_season = stats.data.metadata.current_season
     ranked_segments = [
-        segment for segment in seasons.data.segments if _is_ranked_season_segment(segment)
+        segment
+        for segment in seasons.data.segments
+        if _is_ranked_season_segment(segment)
     ]
     current_segment = _find_current_ranked_segment(
         ranked_segments,
