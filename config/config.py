@@ -5,6 +5,7 @@ class Config:
     _token: str = ""
     _log_level: str = ""
     _guild_id: int = 0
+    _r6data_api_key: str = ""
 
     def __init__(self):
         self.read_config()
@@ -21,6 +22,10 @@ class Config:
     def guild_id(self):
         return self._guild_id
 
+    @property
+    def r6data_api_key(self):
+        return self._r6data_api_key
+
     def read_config(self):
         with open("./config/config.ini", "r") as config_file:
             config = configparser.ConfigParser()
@@ -28,6 +33,11 @@ class Config:
             self._token = config.get("DEFAULT", "token")
             self._log_level = config.get("DEFAULT", "log_level")
             self._guild_id = int(config.get("DEFAULT", "guild_id"))
+            self._r6data_api_key = config.get(
+                "DEFAULT",
+                "r6data_api_key",
+                fallback=config.get("DEFAULT", "r6data_token", fallback=""),
+            )
 
     def read_roles(self):
         with open("./config/config.ini", "r") as config_file:

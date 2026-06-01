@@ -1,0 +1,30 @@
+{
+  "data": {
+    "history": {
+      "data": [
+        [
+          "2026-05-31T21:31:14.438+00:00",
+          {
+            "value": 2203,
+            "metadata": {
+              "rank": "Silver 3",
+              "color": "#a4a4a4",
+              "imageUrl": "https://r6data.com/assets/img/r6_ranks_img/silver-3.webp"
+            },
+            "displayName": "Rank Points",
+            "displayType": "Number",
+            "displayValue": "2,203"
+          }
+        ]
+      ],
+      "metadata": {
+        "key": "RankPoints",
+        "name": "Rank Points",
+        "description": null
+      }
+    },
+    "expiryDate": "0001-01-01T00:00:00+00:00",
+    "bestMatches": null,
+    "leaderboard": null
+  }
+}

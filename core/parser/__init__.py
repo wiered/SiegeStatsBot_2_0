@@ -1,96 +1,144 @@
+import logging
+from typing import Any, TypeVar
+
 import requests
+from pydantic import BaseModel, ValidationError
+
+from config import Config
+from core.parser.models import (
+    AccountInfoResponse,
+    SeasonalStatsResponse,
+    StatsResponse,
+)
+from core.parser.r6data_mapper import map_player
+from core.player_data_models import NormalizedPlayerData
+
+
+logger = logging.getLogger(__name__)
+R6DataResponse = TypeVar("R6DataResponse", bound=BaseModel)
 
 
 class Parser(requests.Session):
-    def __init__(self):
-        # API - tabstats API - https://r6.apitab.net/website
-
-        # API Links
-        self.__tabstats_search_api_url = "https://r6.apitab.net/website/search"
-        self.__tabstats_profie_api_url = "https://r6.apitab.net/website/profiles/{}"
-
-        # init super class
+    def __init__(self, api_key: str | None = None, timeout: int = 15):
         super().__init__()
+        self.__r6data_api_url = "https://api.r6data.com/api/stats"
+        self.__timeout = timeout
+        self.__api_key = api_key if api_key is not None else Config().r6data_api_key
+        self.headers.update({"api-key": self.__api_key})
 
-        # API payload
-        self.__payload = {"display_name": "User", "platform": "uplay"}
+    def get_account_info(self, username: str, platform: str = "uplay") -> dict:
+        return self.__get_r6data_json(
+            {
+                "type": "accountInfo",
+                "nameOnPlatform": username,
+                "platformType": platform,
+            }
+        )
+
+    def get_stats(
+        self,
+        username: str,
+        platform: str = "uplay",
+        platform_family: str = "pc",
+    ) -> dict:
+        return self.__get_r6data_json(
+            {
+                "type": "stats",
+                "nameOnPlatform": username,
+                "platformType": platform,
+                "platform_families": platform_family,
+            }
+        )
+
+    def get_seasonal_stats(self, username: str, platform: str = "uplay") -> dict:
+        return self.__get_r6data_json(
+            {
+                "type": "seasonalStats",
+                "nameOnPlatform": username,
+                "platformType": platform,
+            }
+        )
+
+    def parse_player(self, username: str) -> NormalizedPlayerData:
+        account_info = self.__validate_or_default(
+            AccountInfoResponse,
+            self.get_account_info(username),
+            {},
+        )
+        stats = self.__validate_or_default(
+            StatsResponse,
+            self.get_stats(username),
+            {"data": {}},
+        )
+        seasonal_stats = self.__validate_or_default(
+            SeasonalStatsResponse,
+            self.get_seasonal_stats(username),
+            {"data": {}},
+        )
+
+        return map_player(
+            account_info=account_info,
+            stats=stats,
+            seasonal_stats=seasonal_stats,
+            username=username,
+        )
 
     def search_player(self, playername: str) -> list:
-        """_summary_ : Search player by name
-
-        Args:
-            playername (str): Rainbow Six Siege player name
-
-        Returns:
-            list: list of parsed players
-        """
-
-        self.__payload["display_name"] = playername
-        response = self.get(self.__tabstats_search_api_url, params=self.__payload)
-        if response.status_code != 200:
+        account_info = self.__validate_or_default(
+            AccountInfoResponse,
+            self.get_account_info(playername),
+            {},
+        )
+        if not account_info.profiles:
             return []
-        return [self.__unpack_json__(_json) for _json in response.json()]
 
-    def parse_player(self, player_id: str) -> dict:
-        """_summary_ : Parse overall player data from player id
+        profile = account_info.profiles[0]
+        return [
+            {
+                "name": profile.name_on_platform or playername,
+                "id": profile.name_on_platform or playername,
+                "level": account_info.level
+                or (account_info.profile.level if account_info.profile else 0),
+                "rank": "unranked",
+            }
+        ]
 
-        Args:
-            playerid (str): Rainbow Six Siege player id
+    def __get_r6data_json(self, params: dict[str, str]) -> dict:
+        response_type = params.get("type", "unknown")
+        try:
+            response = self.get(
+                self.__r6data_api_url,
+                params=params,
+                timeout=self.__timeout,
+            )
+        except requests.RequestException:
+            logger.exception("R6Data request failed: %s", response_type)
+            return {}
 
-        Returns:
-            dict: overall player data in json format
-        """
-
-        response = self.get(self.__tabstats_profie_api_url.format(player_id))
         if response.status_code != 200:
+            logger.warning(
+                "R6Data request returned status %s for %s",
+                response.status_code,
+                response_type,
+            )
             return {}
 
-        return response.json()
-
-    def __default_search_json__(self) -> dict:
-        return {
-            "name": "N/A",
-            "id": "N/A",
-            "level": "N/A",
-            "rank": "N/A",
-        }
-
-    def __extract_rank__(self, response, _json) -> dict:
-        rank = None
-        cssr = response.get("current_season_ranked_record")
-        if cssr:
-            rank = cssr.get("rank_slug")[3:]
-
-        if rank:
-            _json.update({"rank": rank})
-
-        return _json
-
-    def __extract_profile__(self, _json: dict, response: dict) -> dict:
-        profile = response.get("profile")
-        if profile:
-            _json.update({"name": profile.get("display_name")})
-            _json.update({"id": profile.get("user_id")})
-            _json.update({"level": profile.get("level")})
-
-        return _json
-
-    def __unpack_json__(self, response, full=False) -> dict:
-        """Unpack json from api to dict
-
-        Args:
-            response (_type_): raw json from api
-            full (bool, optional): if true, unpacking from full json. Defaults to False.
-
-        Returns:
-            dict: unpacked json with player data
-        """
-
-        if not response:
+        try:
+            data = response.json()
+        except ValueError:
+            logger.warning("R6Data returned invalid JSON for %s", response_type)
             return {}
 
-        _json = self.__default_search_json__()
-        _json = self.__extract_profile__(_json, response)
-        _json = self.__extract_rank__(response, _json)
+        return data if isinstance(data, dict) else {}
 
-        return _json
+    def __validate_or_default(
+        self,
+        model: type[R6DataResponse],
+        data: dict[str, Any],
+        default_data: dict[str, Any],
+    ) -> R6DataResponse:
+        try:
+            return model.model_validate(data)
+        except ValidationError:
+            logger.exception("Invalid R6Data %s payload", model.__name__)
+            return model.model_validate(default_data)

@@ -1,0 +1,56 @@
+{
+  "data": {
+    "metadata": {
+      "currentSeason": 41,
+      "clearanceLevel": 530,
+      "battlepassLevel": 171
+    },
+    "segments": [
+      {
+        "type": "season",
+        "stats": {
+          "kills": { "value": 1014, "displayValue": "1,014" },
+          "deaths": { "value": 719, "displayValue": "719" },
+          "kdRatio": { "value": 1.4102920723226704, "displayValue": "1.41" },
+          "matchesWon": { "value": 82, "displayValue": "82" },
+          "rankPoints": { "value": 4435, "displayValue": "4,435" },
+          "matchesLost": { "value": 83, "displayValue": "83" },
+          "matchesPlayed": { "value": 171, "displayValue": "171" },
+          "maxRankPoints": { "value": 4501, "displayValue": "4,501" }
+        },
+        "metadata": {
+          "name": "Silent Hunt",
+          "color": "#a0daae",
+          "rankType": "rp",
+          "shortName": "Y11S1",
+          "seasonName": "Silent Hunt"
+        },
+        "attributes": {
+          "season": 41,
+          "gamemode": "pvp_ranked",
+          "sessionType": "ranked",
+          "region": "global"
+        }
+      },
+      {
+        "type": "season",
+        "stats": {
+          "rankPoints": { "value": null, "displayValue": null },
+          "maxRankPoints": { "value": null, "displayValue": null }
+        },
+        "metadata": {},
+        "attributes": {
+          "season": 40,
+          "gamemode": "pvp_standard",
+          "sessionType": "standard"
+        }
+      }
+    ],
+    "platformInfo": {
+      "platformSlug": "ubi",
+      "platformUserId": "7f5817b9-02de-463f-955d-762d42d3cf6b",
+      "platformUserHandle": "pollz",
+      "avatarUrl": "https://avatars.ubisoft.com/7f5817b9-02de-463f-955d-762d42d3cf6b/default_146_146.png"
+    }
+  }
+}

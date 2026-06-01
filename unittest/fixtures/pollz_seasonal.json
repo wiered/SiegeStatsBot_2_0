@@ -1,0 +1,30 @@
+{
+  "data": {
+    "history": {
+      "data": [
+        [
+          "2026-05-30T19:26:29.915+00:00",
+          {
+            "value": 4435,
+            "metadata": {
+              "rank": "Diamond 1",
+              "color": "#b093ff",
+              "imageUrl": "https://r6data.com/assets/img/r6_ranks_img/diamond-1.webp"
+            },
+            "displayName": "Rank Points",
+            "displayType": "Number",
+            "displayValue": "4,435"
+          }
+        ]
+      ],
+      "metadata": {
+        "key": "RankPoints",
+        "name": "Rank Points",
+        "description": null
+      }
+    },
+    "expiryDate": "0001-01-01T00:00:00+00:00",
+    "bestMatches": null,
+    "leaderboard": null
+  }
+}
