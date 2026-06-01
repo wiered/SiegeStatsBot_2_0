@@ -25,6 +25,7 @@ from core.player_data_models import (
     NormalizedSeasonCollection,
     NormalizedSeasonOption,
 )
+from cogs.ui import ProfileEmbed
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -231,6 +232,29 @@ def test_player_data_adapts_normalized_model_to_ui_contract() -> None:
     assert player.seasons == ["40"]
     assert player.season_labels == {"40": "Y10S4"}
     assert player.rank == "silver-3"
+
+
+def test_profile_embed_formats_decimal_values_to_two_places() -> None:
+    normalized = NormalizedPlayerData(
+        name="wiered",
+        profile=NormalizedProfile(display_name="wiered", level=325),
+        current_season_records=NormalizedSeasonCollection(
+            ranked=NormalizedRankedSeasonRecord(
+                kd=1.4102920723226704,
+                wl=82 / 165,
+                kills=1014,
+                deaths=719,
+                wins=82,
+                losses=83,
+            )
+        ),
+    )
+
+    embed = ProfileEmbed(PlayerData(normalized), d_id=1)
+    fields = {field.name: field.value for field in embed.fields}
+
+    assert fields["SeasonalKD:"] == "**1.41**\nKills **1014**\nDeaths **719**"
+    assert fields["SeasonalWL:"] == "**49.70%**\nWins **82**\nLosses **83**"
 
 
 def test_rank_points_to_rank_uses_highest_matching_threshold() -> None:

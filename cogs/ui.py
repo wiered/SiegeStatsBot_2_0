@@ -10,6 +10,13 @@ from db.db import users_db
 
 default_footer = "R6HubBot • https://github.com/wiered"
 
+
+def format_ui_number(value: int | float) -> str:
+    if isinstance(value, float):
+        return f"{value:.2f}"
+    return str(value)
+
+
 # ========================= #
 # Buttons                   #
 
@@ -230,7 +237,7 @@ class ProfileEmbed(discord.Embed):
         self.add_field(
             name="General:",
             value="Level **{}**\nPlatform: **{}**".format(
-                self.player.profile.level,
+                format_ui_number(self.player.profile.level),
                 self.player.profile.platform_slug.replace("-", " ").capitalize(),
             ),
             inline=True,
@@ -243,9 +250,9 @@ class ProfileEmbed(discord.Embed):
         self.add_field(
             name="RP:",
             value="**{}**\n{}\nMAX **{}**".format(
-                record.mmr,
-                f"{record.mmr_point}{record.mmr_change}",
-                record.max_mmr,
+                format_ui_number(record.mmr),
+                f"{record.mmr_point}{format_ui_number(record.mmr_change)}",
+                format_ui_number(record.max_mmr),
             ),
             inline=True,
         )
@@ -260,18 +267,18 @@ class ProfileEmbed(discord.Embed):
         self.add_field(
             name="SeasonalKD:",
             value="**{}**\nKills **{}**\nDeaths **{}**".format(
-                record.kd,
-                record.kills,
-                record.deaths,
+                format_ui_number(record.kd),
+                format_ui_number(record.kills),
+                format_ui_number(record.deaths),
             ),
             inline=True,
         )
         self.add_field(
             name="SeasonalWL:",
             value="**{}**\nWins **{}**\nLosses **{}**".format(
-                f"{record.wl * 100}%",
-                record.wins,
-                record.losses,
+                f"{format_ui_number(record.wl * 100)}%",
+                format_ui_number(record.wins),
+                format_ui_number(record.losses),
             ),
             inline=True,
         )
@@ -327,7 +334,7 @@ class AccountConfirmEmbed(discord.Embed):
         )
         self.add_field(
             name="Level:",
-            value=f"**{self.profile.level}**",
+            value=f"**{format_ui_number(self.profile.level)}**",
             inline=True,
         )
         if self.profile.avatar_url:
