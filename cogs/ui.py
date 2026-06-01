@@ -5,6 +5,7 @@ from discord import ButtonStyle, SelectOption
 
 from core import user
 from core.player_data import PlayerData
+from core.player_data_models import NormalizedProfile
 from db.db import users_db
 
 default_footer = "R6HubBot • https://github.com/wiered"
@@ -13,49 +14,49 @@ default_footer = "R6HubBot • https://github.com/wiered"
 # Buttons                   #
 
 
-class AuthButton(ui.Button):
-    def __init__(self, d_id: int, i, _, *args, **kwargs):
+class AccountConfirmButton(ui.Button):
+    def __init__(
+        self,
+        d_id: int,
+        username: str,
+        confirmed: bool,
+        *args,
+        **kwargs,
+    ):
         super().__init__(
-            label=str(i + 1),
-            custom_id=_.get("id"),
-            style=ButtonStyle.green,
-            row=i // 4,
+            label="Yes" if confirmed else "No",
+            custom_id=f"account-confirm:{d_id}:{'yes' if confirmed else 'no'}",
+            style=ButtonStyle.green if confirmed else ButtonStyle.red,
             *args,
             **kwargs,
         )
         self.__d_id = d_id
+        self.__username = username
+        self.__confirmed = confirmed
 
     async def callback(self, interaction: Interaction):
-        _user = user.User(d_id=self.__d_id, siege_id=str(self.custom_id))
+        if interaction.user.id != self.__d_id:
+            await interaction.response.send_message(
+                "This confirmation is not for you.",
+                ephemeral=True,
+            )
+            return
+
+        if not self.__confirmed:
+            await interaction.response.edit_message(
+                content="Authorization canceled.",
+                embed=None,
+                view=None,
+            )
+            return
+
+        _user = user.User(d_id=self.__d_id, siege_id=self.__username)
         users_db.add_user(_user)
 
         if interaction.message:
             _view = SeasonsView(_user.player_data, self.__d_id)
             await interaction.response.edit_message(
                 content=f"Authorized as {_user.name}",
-                embed=ProfileEmbed(_user.player_data, self.__d_id),
-                view=_view,
-            )
-
-
-class SearchButton(ui.Button):
-    def __init__(self, d_id: int, i, _, *args, **kwargs):
-        super().__init__(
-            label=str(i + 1),
-            custom_id=_.get("id"),
-            style=ButtonStyle.green,
-            row=i // 4,
-            *args,
-            **kwargs,
-        )
-        self.__d_id = d_id
-
-    async def callback(self, interaction: Interaction):
-        _user = user.User(d_id=self.__d_id, siege_id=str(self.custom_id))
-        if interaction.message:
-            _view = SeasonsView(_user.player_data, self.__d_id)
-            await interaction.response.edit_message(
-                content=f"Stats for {_user.name}",
                 embed=ProfileEmbed(_user.player_data, self.__d_id),
                 view=_view,
             )
@@ -70,10 +71,10 @@ class GitHubButton(ui.Button):
         )
 
 
-class TabstatsButton(ui.Button):
+class R6DataButton(ui.Button):
     def __init__(self, url: str):
         super().__init__(
-            label="Tabstats",
+            label="R6Data",
             style=ButtonStyle.link,
             url=url,
         )
@@ -130,10 +131,10 @@ class SeasonsView(ui.View):
         super().__init__(timeout=timeout)
         self.generate_seasons_select()
 
-    @staticmethod
-    def gen_season_option(season_slug):
+    def gen_season_option(self, season_slug):
+        label = self.player.season_labels.get(season_slug, season_slug)
         _option = SelectOption(
-            label=season_slug.replace("-", " ").capitalize(),
+            label=label.replace("-", " ").capitalize(),
             value=str(season_slug),
             emoji="🥕",
         )
@@ -177,26 +178,32 @@ class SeasonsView(ui.View):
 
         url = self.player.profile.profile_url
 
-        self.add_item(TabstatsButton(url))
+        self.add_item(R6DataButton(url))
         self.add_item(GitHubButton())
 
 
-class SearchButtonsView(ui.View):
-    def __init__(self, search_results: list, d_id: int, auth=False):
+class AccountConfirmView(ui.View):
+    def __init__(self, profile: NormalizedProfile, d_id: int):
         super().__init__(timeout=180)
-        self.search_results = search_results
+        self.profile = profile
         self.d_id = d_id
-        self.auth = auth
         self.generate_buttons()
 
     def generate_buttons(self):
-        for i in range(len(self.search_results)):
-            _button = (
-                AuthButton(self.d_id, i, self.search_results[i])
-                if self.auth
-                else SearchButton(self.d_id, i, self.search_results[i])
+        self.add_item(
+            AccountConfirmButton(
+                d_id=self.d_id,
+                username=self.profile.display_name,
+                confirmed=True,
             )
-            self.add_item(_button)
+        )
+        self.add_item(
+            AccountConfirmButton(
+                d_id=self.d_id,
+                username=self.profile.display_name,
+                confirmed=False,
+            )
+        )
 
 
 # ========================= #
@@ -209,7 +216,7 @@ class ProfileEmbed(discord.Embed):
         self.d_id = d_id
         self.season = season
         super().__init__(
-            title="Tabstats", url=self.player.profile.profile_url, color=0x039BBA
+            title="R6Data", url=self.player.profile.profile_url, color=0x039BBA
         )
         self.generate_player_embed(season)
 
@@ -234,7 +241,7 @@ class ProfileEmbed(discord.Embed):
 
     def _add_std_fields(self, record):
         self.add_field(
-            name="MMR:",
+            name="RP:",
             value="**{}**\n{}\nMAX **{}**".format(
                 record.mmr,
                 f"{record.mmr_point}{record.mmr_change}",
@@ -268,12 +275,6 @@ class ProfileEmbed(discord.Embed):
             ),
             inline=True,
         )
-        self.add_field(
-            name="Bans(WIP):",
-            value="None",
-            inline=True,
-        )
-
         if self.season != "":
             self.set_thumbnail(url=record.rank_image_url)
             season = record.season_slug.replace("-", " ").capitalize()
@@ -297,34 +298,41 @@ class ProfileEmbed(discord.Embed):
         self._add_std_fields(record)
 
 
-class SearchEmbed(discord.Embed):
-    def __init__(self, users_list, search_request):
-        self.users_list = users_list
+class AccountConfirmEmbed(discord.Embed):
+    def __init__(self, profile: NormalizedProfile, search_request: str):
+        self.profile = profile
         self.search_request = search_request
-        super().__init__(color=0x039BBA)
-
-        if search_request and users_list:
-            self.gen_stds()
-
-        if not search_request:
-            self = NoSearchResultEmbed(search_request="N/A")
-
-        if not users_list:
-            self = NoSearchResultEmbed(search_request=search_request)
+        super().__init__(
+            title="Is this your account?",
+            url=profile.profile_url,
+            color=0x039BBA,
+        )
+        self.gen_stds()
 
     def gen_stds(self):
-        self.set_author(name="Search for {}:".format(self.search_request))
+        self.set_author(
+            name=self.profile.display_name or self.search_request,
+            url=self.profile.profile_url,
+            icon_url=self.profile.avatar_url,
+        )
+        self.add_field(
+            name="Username:",
+            value=f"**{self.profile.display_name or self.search_request}**",
+            inline=True,
+        )
+        self.add_field(
+            name="Platform:",
+            value=f"**{self.profile.platform_slug.replace('-', ' ').capitalize()}**",
+            inline=True,
+        )
+        self.add_field(
+            name="Level:",
+            value=f"**{self.profile.level}**",
+            inline=True,
+        )
+        if self.profile.avatar_url:
+            self.set_thumbnail(url=self.profile.avatar_url)
         self.set_footer(text=default_footer)
-
-        embed_value = "Level: {:3} {:6} Rank: {:10}"
-        nbsp = "᲼"
-        for i, _user in enumerate(self.users_list):
-            level = str(_user["level"]) + (3 - len(str(_user["level"]))) * nbsp
-            self.add_field(
-                name=f"{i + 1}. {_user['name']}",
-                value=embed_value.format(level, 4 * nbsp, _user["rank"]),
-                inline=False,
-            )
 
 
 class AuthorizedEmbed(discord.Embed):

@@ -1,8 +1,12 @@
 import logging
+from pathlib import Path
 
 
 from core import csv_addon, parser, type_helpers
 from core.player_data import PlayerData
+from core.player_data_models import NormalizedPlayerData
+
+USERS_CSV_PATH = Path(__file__).resolve().parents[1] / "db" / "users.csv"
 
 
 class UsersVault:
@@ -35,14 +39,8 @@ class UsersVault:
 
         self.__users.clear()
         logging.info("Instantiating from csv")
-        try:
-            self.__load_users__()
-            logging.info("Users loaded")
-        except FileNotFoundError:
-            logging.exception("No such file or directory: './db/stats.csv'")
-            raise FileNotFoundError(
-                "[Errno 2] No such file or directory: './db/stats.csv'"
-            )
+        self.__load_users__()
+        logging.info("Users loaded")
 
     def save_instance_to_csv(self):
         """Save all authorized users to csv"""
@@ -50,7 +48,7 @@ class UsersVault:
         users_data = []
         for user in self.__users.values():
             users_data.append(self.__generate_user_data__(user))
-        csv_addon.write_to_csv("./db/users.csv", users_data)
+        csv_addon.write_to_csv(USERS_CSV_PATH, users_data)
         logging.info("All userdata saved")
 
     def get_user(self, d_id: int):
@@ -89,7 +87,11 @@ class UsersVault:
     def __load_users__(self):
         """Load all authorized users from csv"""
 
-        items = csv_addon.load_from_csv("./db/users.csv")
+        if not USERS_CSV_PATH.exists():
+            logging.warning("Users csv not found: %s", USERS_CSV_PATH)
+            return
+
+        items = csv_addon.load_from_csv(USERS_CSV_PATH)
         if len(items) == 0:
             logging.warning("No users in csv")
             return
@@ -126,10 +128,10 @@ class User:
     ):
         self.__d_id = d_id
         self.__siege_id = siege_id
-        self.__full_json = {}
+        self.__full_json: dict = {}
+        self.__normalized_data = NormalizedPlayerData()
 
         self.parse_data()
-        self.player_data: PlayerData = PlayerData(self.__full_json)
 
     @property
     def name(self) -> str:
@@ -158,18 +160,20 @@ class User:
         return self.player_data
 
     def parse_data(self):
-        """Parsing data from tabstats
-
-        Args:
-            by_name (bool, optional): if True, parse by name. Defaults to False.
-        """
+        """Parse player data from R6Data."""
 
         with parser.Parser() as _parser:
-            full_json = _parser.parse_player(self.__siege_id)
+            parsed_player = _parser.parse_player(self.__siege_id)
 
-        if isinstance(full_json, dict):
-            self.__full_json = full_json
-            self.player_data: PlayerData = PlayerData(self.__full_json)
+        if isinstance(parsed_player, NormalizedPlayerData):
+            self.__normalized_data = parsed_player
+            self.__full_json = parsed_player.model_dump()
+            self.player_data = PlayerData(parsed_player)
+            if parsed_player.name and parsed_player.name != "N/A":
+                self.__siege_id = parsed_player.name
+        elif isinstance(parsed_player, dict):
+            self.__full_json = parsed_player
+            self.player_data = PlayerData(parsed_player)
 
         logging.info(f"Stats parsed: {self.rank}")
 

@@ -5,6 +5,7 @@ from discord import Interaction
 
 from cogs import ui as ui_cogs
 from core import parser
+from core import user
 from db.db import users_db
 
 
@@ -19,13 +20,13 @@ class HubTree(commands.Cog):
     async def stats(self, ctx, name: str = ""):
         if not name:
             return await self.__get_self_stats__(ctx)
-        return await self.__get_search_results__(ctx, name, auth=False, ephemeral=False)
+        return await self.__get_player_stats__(ctx, name, ephemeral=False)
 
     @sielent.command(name="stats", description="Get siege stats. Will see only you")
     async def sielent_stats(self, ctx, name: str = ""):
         if not name:
             return await self.__get_self_stats__(ctx, ephemeral=True)
-        return await self.__get_search_results__(ctx, name, auth=False, ephemeral=True)
+        return await self.__get_player_stats__(ctx, name, ephemeral=True)
 
     @hub_group.command(name="authorize", description="Authorize your account")
     async def auth(self, interaction: Interaction, name: str) -> None:
@@ -37,22 +38,55 @@ class HubTree(commands.Cog):
                 embed=ui_cogs.AuthorizedEmbed(), ephemeral=True
             )
 
-        await self.__get_search_results__(interaction, name, auth=True, ephemeral=True)
+        await self.__get_account_confirmation__(interaction, name)
 
-    async def __get_search_results__(
+    async def __get_account_confirmation__(
         self,
         interaction: Interaction,
-        name,
-        auth: bool = False,
+        name: str,
+    ):
+        with parser.Parser() as p:
+            profile = p.get_account_profile(name)
+
+        if profile is None:
+            return await interaction.response.send_message(
+                embed=ui_cogs.NoSearchResultEmbed(name),
+                ephemeral=True,
+            )
+
+        embed = ui_cogs.AccountConfirmEmbed(profile, name)
+        view = ui_cogs.AccountConfirmView(profile, interaction.user.id)
+        return await interaction.response.send_message(
+            embed=embed,
+            view=view,
+            delete_after=1800,
+            ephemeral=True,
+        )
+
+    async def __get_player_stats__(
+        self,
+        interaction: Interaction,
+        name: str,
         ephemeral: bool = False,
     ):
         with parser.Parser() as p:
-            search_results = p.search_player(name)
-            embed = ui_cogs.SearchEmbed(search_results, name)
-            view = ui_cogs.SearchButtonsView(search_results, interaction.user.id, auth)
-            await interaction.response.send_message(
-                embed=embed, view=view, delete_after=1800, ephemeral=ephemeral
+            profile = p.get_account_profile(name)
+
+        if profile is None:
+            return await interaction.response.send_message(
+                embed=ui_cogs.NoSearchResultEmbed(name),
+                ephemeral=ephemeral,
             )
+
+        _user = user.User(d_id=interaction.user.id, siege_id=profile.display_name)
+        embed = ui_cogs.ProfileEmbed(_user.player_data, interaction.user.id)
+        _view = ui_cogs.SeasonsView(_user.player_data, interaction.user.id)
+
+        return await interaction.response.send_message(
+            embed=embed,
+            view=_view,
+            ephemeral=ephemeral,
+        )
 
     async def __get_self_stats__(
         self, interaction: Interaction, ephemeral: bool = False

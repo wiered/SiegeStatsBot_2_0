@@ -138,8 +138,8 @@ config/config.ini
 main.py
 
 # My Own Folders
-tests/
 old/
 temp/
 json_examples/
 logging/
+tmp/

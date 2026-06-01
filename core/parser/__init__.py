@@ -10,8 +10,8 @@ from core.parser.models import (
     SeasonalStatsResponse,
     StatsResponse,
 )
-from core.parser.r6data_mapper import map_player
-from core.player_data_models import NormalizedPlayerData
+from core.parser.r6data_mapper import map_account_info_to_profile, map_player
+from core.player_data_models import NormalizedPlayerData, NormalizedProfile
 
 
 logger = logging.getLogger(__name__)
@@ -59,6 +59,20 @@ class Parser(requests.Session):
             }
         )
 
+    def get_account_profile(
+        self,
+        username: str,
+        platform: str = "uplay",
+    ) -> NormalizedProfile | None:
+        account_info = self.__validate_or_default(
+            AccountInfoResponse,
+            self.get_account_info(username, platform),
+            {},
+        )
+        if not account_info.profiles:
+            return None
+        return map_account_info_to_profile(account_info, username, platform)
+
     def parse_player(self, username: str) -> NormalizedPlayerData:
         account_info = self.__validate_or_default(
             AccountInfoResponse,
@@ -82,26 +96,6 @@ class Parser(requests.Session):
             seasonal_stats=seasonal_stats,
             username=username,
         )
-
-    def search_player(self, playername: str) -> list:
-        account_info = self.__validate_or_default(
-            AccountInfoResponse,
-            self.get_account_info(playername),
-            {},
-        )
-        if not account_info.profiles:
-            return []
-
-        profile = account_info.profiles[0]
-        return [
-            {
-                "name": profile.name_on_platform or playername,
-                "id": profile.name_on_platform or playername,
-                "level": account_info.level
-                or (account_info.profile.level if account_info.profile else 0),
-                "rank": "unranked",
-            }
-        ]
 
     def __get_r6data_json(self, params: dict[str, str]) -> dict:
         response_type = params.get("type", "unknown")

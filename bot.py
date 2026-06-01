@@ -1,6 +1,6 @@
 import asyncio
 import atexit
-from datetime import datetime
+from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands
@@ -23,7 +23,7 @@ class R6HubBot(commands.Bot):
             "cogs.slash_commands",
             "cogs.role_manager",
         ]
-        self.start_time = datetime.utcnow()
+        self.start_time = datetime.now(timezone.utc)
         print("Bot is ready!")
 
     async def on_connect(self):
