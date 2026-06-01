@@ -98,8 +98,22 @@ class StatsResponse(R6DataModel):
     @model_validator(mode="before")
     @classmethod
     def normalize_stats_payload(cls, value: Any) -> Any:
-        if not isinstance(value, dict) or "data" in value:
+        if not isinstance(value, dict):
             return value
+
+        if "data" in value:
+            data = value.get("data")
+            if not isinstance(data, dict):
+                return value
+            merged_data = {
+                **data,
+                **{
+                    key: value[key]
+                    for key in ("metadata", "segments", "platformInfo")
+                    if key in value
+                },
+            }
+            return {**value, "data": merged_data}
 
         if {"metadata", "segments", "platformInfo"} & value.keys():
             return {"data": value}

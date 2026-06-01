@@ -104,7 +104,9 @@ class SeasonSelect(ui.Select):
         _user = await user.User.create(d_id=self.__d_id, siege_id=str(self.__user_id))
 
         embed = ProfileEmbed(_user.player_data, self.__d_id, season=self.values[0])
-        _view = SeasonsView(_user.player_data, self.__d_id)
+        print(_user.player_data)
+        print(self.values[0])
+        _view = SeasonsView(_user.player_data, self.__d_id, season=self.values[0])
 
         if embed and interaction.message:
             await interaction.message.edit(embed=embed, view=_view)
@@ -134,11 +136,17 @@ class NoSeasonsSelect(ui.Select):
 
 
 class SeasonsView(ui.View):
-    def __init__(self, player, d_id: int, timeout: float = 180):
+    def __init__(self, player, d_id: int, timeout: float = 180, season: str = ""):
         self.player = player
         self.d_id = d_id
         super().__init__(timeout=timeout)
-        self.generate_seasons_select()
+        record = self.player.current_season_records.ranked
+        if season:
+            record = self.player.get_season_record(season)
+        print(dir(record))
+        print(f"Season: {record.season_slug}")
+
+        self.generate_seasons_select(record.season_slug)
 
     def gen_season_option(self, season_slug):
         label = self.player.season_labels.get(season_slug, season_slug)

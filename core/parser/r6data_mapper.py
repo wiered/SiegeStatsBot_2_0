@@ -117,6 +117,7 @@ def map_player(
     account_info: AccountInfoResponse,
     stats: StatsResponse,
     seasonal_stats: SeasonalStatsResponse,
+    seasons: StatsResponse,
     username: str,
     platform: str = "uplay",
 ) -> NormalizedPlayerData:
@@ -138,9 +139,12 @@ def map_player(
 
     current_season = stats.data.metadata.current_season
     ranked_segments = [
-        segment for segment in stats.data.segments if _is_ranked_season_segment(segment)
+        segment for segment in seasons.data.segments if _is_ranked_season_segment(segment)
     ]
-    current_segment = _find_current_ranked_segment(ranked_segments, current_season)
+    current_segment = _find_current_ranked_segment(
+        ranked_segments,
+        current_season,
+    )
 
     current_record = map_ranked_segment_to_record(
         current_segment,
@@ -156,7 +160,7 @@ def map_player(
         )
         if segment is not current_segment
     ]
-    seasons = [
+    season_options = [
         NormalizedSeasonOption(
             season_id=record.season_id,
             season_slug=record.season_slug,
@@ -170,7 +174,7 @@ def map_player(
         profile=profile,
         current_season_records=NormalizedSeasonCollection(ranked=current_record),
         past_season_ranked_records=past_records,
-        seasons=seasons,
+        seasons=season_options,
         rank=current_record.rank_slug,
         r6data_url=profile.profile_url,
     )
@@ -209,7 +213,7 @@ def map_ranked_segment_to_record(
         mode_slug=segment.attributes.session_type
         or _normalize_gamemode(segment.attributes.gamemode),
         season_id=segment.attributes.season or 0,
-        season_slug=segment.metadata.short_name or "N/A",
+        season_slug=segment.metadata.name or "N/A",
         season_name=segment.metadata.season_name or segment.metadata.name or "N/A",
         region_slug=segment.attributes.region or "global",
         rank_slug=rank_slug,

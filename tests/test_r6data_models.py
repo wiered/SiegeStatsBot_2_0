@@ -394,6 +394,53 @@ def test_current_and_past_ranked_seasons_are_mapped_from_segments() -> None:
             }
         ),
         username="wiered",
+        seasons=StatsResponse.model_validate(
+            {
+                "data": {
+                    "metadata": {
+                        "currentSeason": 41,
+                        "clearanceLevel": 530,
+                        "battlepassLevel": 171,
+                    },
+                },
+                "segments": [
+                    {
+                        "type": "season",
+                        "stats": {
+                            "kills": {"value": 1014, "displayValue": "1,014"},
+                            "deaths": {"value": 719, "displayValue": "719"},
+                            "kdRatio": {
+                                "value": 1.4102920723226704,
+                                "displayValue": "1.41",
+                            },
+                            "matchesWon": {"value": 82, "displayValue": "82"},
+                            "rankPoints": {"value": 4435, "displayValue": "4,435"},
+                            "matchesLost": {"value": 83, "displayValue": "83"},
+                            "matchesPlayed": {"value": 171, "displayValue": "171"},
+                            "maxRankPoints": {"value": 4501, "displayValue": "4,501"},
+                        },
+                        "metadata": {
+                            "name": "Silent Hunt",
+                            "color": "#a0daae",
+                            "rankType": "rp",
+                            "shortName": "Y11S1",
+                            "seasonName": "Silent Hunt",
+                        },
+                        "attributes": {
+                            "season": 41,
+                            "gamemode": "pvp_ranked",
+                            "sessionType": "ranked",
+                        },
+                    },
+                ],
+                "platformInfo": {
+                    "avatarUrl": "https://ubisoft-avatars.akamaized.net/7f5817b9-02de-463f-955d-762d42d3cf6b/default_256_256.png",
+                    "platformSlug": "ubi",
+                    "platformUserId": "7f5817b9-02de-463f-955d-762d42d3cf6b",
+                    "platformUserHandle": "pollz",
+                },
+            }
+        ),
     )
 
     current = player.current_season_records.ranked
@@ -474,6 +521,7 @@ def test_map_player_builds_complete_normalized_player_from_fixtures() -> None:
             load_fixture("pollz_seasonal.json")
         ),
         username="pollz",
+        seasons=StatsResponse.model_validate(load_fixture("pollz_seasons.json")),
     )
 
     ranked = player.current_season_records.ranked
@@ -509,6 +557,9 @@ def test_parser_parse_player_returns_normalized_player(
     async def get_seasonal_stats(username: str) -> dict:
         return load_fixture("pollz_seasonal.json")
 
+    async def get_seasons_stats(username: str) -> dict:
+        return load_fixture("pollz_seasons.json")
+
     monkeypatch.setattr(
         parser,
         "get_account_info",
@@ -523,6 +574,11 @@ def test_parser_parse_player_returns_normalized_player(
         parser,
         "get_seasonal_stats",
         get_seasonal_stats,
+    )
+    monkeypatch.setattr(
+        parser,
+        "get_seasons_stats",
+        get_seasons_stats,
     )
 
     player = asyncio.run(parser.parse_player("pollz"))
