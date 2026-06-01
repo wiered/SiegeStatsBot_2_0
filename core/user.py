@@ -125,13 +125,22 @@ class User:
         self,
         d_id: int = 0,
         siege_id: str = "",
+        player_data: NormalizedPlayerData | None = None,
     ):
         self.__d_id = d_id
         self.__siege_id = siege_id
         self.__full_json: dict = {}
         self.__normalized_data = NormalizedPlayerData()
+        self.player_data = PlayerData(self.__normalized_data)
 
-        self.parse_data()
+        if player_data is not None:
+            self.set_player_data(player_data)
+
+    @classmethod
+    async def create(cls, d_id: int = 0, siege_id: str = ""):
+        user = cls(d_id=d_id, siege_id=siege_id)
+        await user.parse_data()
+        return user
 
     @property
     def name(self) -> str:
@@ -159,23 +168,26 @@ class User:
     def data(self) -> PlayerData:
         return self.player_data
 
-    def parse_data(self):
+    async def parse_data(self):
         """Parse player data from R6Data."""
 
-        with parser.Parser() as _parser:
-            parsed_player = _parser.parse_player(self.__siege_id)
+        async with parser.Parser() as _parser:
+            parsed_player = await _parser.parse_player(self.__siege_id)
 
         if isinstance(parsed_player, NormalizedPlayerData):
-            self.__normalized_data = parsed_player
-            self.__full_json = parsed_player.model_dump()
-            self.player_data = PlayerData(parsed_player)
-            if parsed_player.name and parsed_player.name != "N/A":
-                self.__siege_id = parsed_player.name
+            self.set_player_data(parsed_player)
         elif isinstance(parsed_player, dict):
             self.__full_json = parsed_player
             self.player_data = PlayerData(parsed_player)
 
         logging.info(f"Stats parsed: {self.rank}")
+
+    def set_player_data(self, parsed_player: NormalizedPlayerData) -> None:
+        self.__normalized_data = parsed_player
+        self.__full_json = parsed_player.model_dump()
+        self.player_data = PlayerData(parsed_player)
+        if parsed_player.name and parsed_player.name != "N/A":
+            self.__siege_id = parsed_player.name
 
     def __repr__(self) -> str:
         return f"User({self.__d_id}, {self.__siege_id})"

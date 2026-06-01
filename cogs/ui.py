@@ -57,12 +57,13 @@ class AccountConfirmButton(ui.Button):
             )
             return
 
-        _user = user.User(d_id=self.__d_id, siege_id=self.__username)
+        await interaction.response.defer()
+        _user = await user.User.create(d_id=self.__d_id, siege_id=self.__username)
         users_db.add_user(_user)
 
         if interaction.message:
             _view = SeasonsView(_user.player_data, self.__d_id)
-            await interaction.response.edit_message(
+            await interaction.message.edit(
                 content=f"Authorized as {_user.name}",
                 embed=ProfileEmbed(_user.player_data, self.__d_id),
                 view=_view,
@@ -99,13 +100,14 @@ class SeasonSelect(ui.Select):
         self.__user_id = user_id
 
     async def callback(self, interaction: Interaction):
-        _user = user.User(d_id=self.__d_id, siege_id=str(self.__user_id))
+        await interaction.response.defer()
+        _user = await user.User.create(d_id=self.__d_id, siege_id=str(self.__user_id))
 
         embed = ProfileEmbed(_user.player_data, self.__d_id, season=self.values[0])
         _view = SeasonsView(_user.player_data, self.__d_id)
 
-        if embed:
-            await interaction.response.edit_message(embed=embed, view=_view)
+        if embed and interaction.message:
+            await interaction.message.edit(embed=embed, view=_view)
 
 
 class NoSeasonsSelect(ui.Select):

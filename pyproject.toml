@@ -9,7 +9,6 @@ dependencies = [
     "discord-py==2.1.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.1",
-    "requests>=2.34.2",
 ]
 
 [dependency-groups]

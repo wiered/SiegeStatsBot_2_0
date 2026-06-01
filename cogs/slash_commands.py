@@ -45,21 +45,22 @@ class HubTree(commands.Cog):
         interaction: Interaction,
         name: str,
     ):
-        with parser.Parser() as p:
-            profile = p.get_account_profile(name)
+        await interaction.response.defer(ephemeral=True)
+
+        async with parser.Parser() as p:
+            profile = await p.get_account_profile(name)
 
         if profile is None:
-            return await interaction.response.send_message(
+            return await interaction.followup.send(
                 embed=ui_cogs.NoSearchResultEmbed(name),
                 ephemeral=True,
             )
 
         embed = ui_cogs.AccountConfirmEmbed(profile, name)
         view = ui_cogs.AccountConfirmView(profile, interaction.user.id)
-        return await interaction.response.send_message(
+        return await interaction.followup.send(
             embed=embed,
             view=view,
-            delete_after=1800,
             ephemeral=True,
         )
 
@@ -69,20 +70,25 @@ class HubTree(commands.Cog):
         name: str,
         ephemeral: bool = False,
     ):
-        with parser.Parser() as p:
-            profile = p.get_account_profile(name)
+        await interaction.response.defer(ephemeral=ephemeral)
+
+        async with parser.Parser() as p:
+            profile = await p.get_account_profile(name)
 
         if profile is None:
-            return await interaction.response.send_message(
+            return await interaction.followup.send(
                 embed=ui_cogs.NoSearchResultEmbed(name),
                 ephemeral=ephemeral,
             )
 
-        _user = user.User(d_id=interaction.user.id, siege_id=profile.display_name)
+        _user = await user.User.create(
+            d_id=interaction.user.id,
+            siege_id=profile.display_name,
+        )
         embed = ui_cogs.ProfileEmbed(_user.player_data, interaction.user.id)
         _view = ui_cogs.SeasonsView(_user.player_data, interaction.user.id)
 
-        return await interaction.response.send_message(
+        return await interaction.followup.send(
             embed=embed,
             view=_view,
             ephemeral=ephemeral,
@@ -97,13 +103,15 @@ class HubTree(commands.Cog):
                 embed=ui_cogs.UnauthorizedEmbed(), ephemeral=ephemeral
             )
 
+        await interaction.response.defer(ephemeral=ephemeral)
+        await _user.parse_data()
         embed = ui_cogs.ProfileEmbed(_user.player_data, interaction.user.id)
 
         _view = ui_discord.View()
         _view.add_item(ui_cogs.NoSeasonsSelect())
         _view = ui_cogs.SeasonsView(_user.player_data, interaction.user.id)
 
-        return await interaction.response.send_message(
+        return await interaction.followup.send(
             embed=embed, view=_view, ephemeral=ephemeral
         )
 

@@ -1,3 +1,4 @@
+import asyncio
 import json
 from pathlib import Path
 
@@ -499,23 +500,32 @@ def test_parser_parse_player_returns_normalized_player(
 ) -> None:
     parser = Parser(api_key="")
 
+    async def get_account_info(username: str) -> dict:
+        return load_fixture("accountInfo.json")
+
+    async def get_stats(username: str) -> dict:
+        return load_fixture("pollz_data.json")
+
+    async def get_seasonal_stats(username: str) -> dict:
+        return load_fixture("pollz_seasonal.json")
+
     monkeypatch.setattr(
         parser,
         "get_account_info",
-        lambda username: load_fixture("accountInfo.json"),
+        get_account_info,
     )
     monkeypatch.setattr(
         parser,
         "get_stats",
-        lambda username: load_fixture("pollz_data.json"),
+        get_stats,
     )
     monkeypatch.setattr(
         parser,
         "get_seasonal_stats",
-        lambda username: load_fixture("pollz_seasonal.json"),
+        get_seasonal_stats,
     )
 
-    player = parser.parse_player("pollz")
+    player = asyncio.run(parser.parse_player("pollz"))
 
     assert isinstance(player, NormalizedPlayerData)
     assert player.current_season_records.ranked.season_id == 41
@@ -527,13 +537,16 @@ def test_parser_get_account_profile_returns_confirmation_profile(
 ) -> None:
     parser = Parser(api_key="")
 
+    async def get_account_info(username: str, platform: str = "uplay") -> dict:
+        return load_fixture("accountInfo.json")
+
     monkeypatch.setattr(
         parser,
         "get_account_info",
-        lambda username, platform="uplay": load_fixture("accountInfo.json"),
+        get_account_info,
     )
 
-    profile = parser.get_account_profile("wiered")
+    profile = asyncio.run(parser.get_account_profile("wiered"))
 
     assert profile is not None
     assert profile.display_name == "wiered"
@@ -549,10 +562,13 @@ def test_parser_get_account_profile_returns_none_without_profile(
 ) -> None:
     parser = Parser(api_key="")
 
+    async def get_account_info(username: str, platform: str = "uplay") -> dict:
+        return {}
+
     monkeypatch.setattr(
         parser,
         "get_account_info",
-        lambda username, platform="uplay": {},
+        get_account_info,
     )
 
-    assert parser.get_account_profile("missing") is None
+    assert asyncio.run(parser.get_account_profile("missing")) is None

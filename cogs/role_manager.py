@@ -25,7 +25,7 @@ class RoleManager(commands.Cog):
             if not member:
                 continue
 
-            user.parse_data()
+            await user.parse_data()
 
             role_id = RoleDicts.get_rank_role(user.data.rank)
             if role_id == 0:
