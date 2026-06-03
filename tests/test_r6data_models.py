@@ -132,6 +132,60 @@ def test_stats_response_normalizes_raw_platform_profile_payload() -> None:
     assert segment.stats.rank_points.value == 4435
 
 
+def test_stats_response_prefers_ranked_profile_totals_for_kd_and_wl() -> None:
+    response = StatsResponse.model_validate(
+        {
+            "platform_families_full_profiles": [
+                {
+                    "profile_id": "profile-id",
+                    "board_ids_full_profiles": [
+                        {
+                            "board_id": "ranked",
+                            "full_profiles": [
+                                {
+                                    "profile": {
+                                        "wins": 20,
+                                        "losses": 10,
+                                        "abandon": 2,
+                                        "kills": 90,
+                                        "deaths": 30,
+                                        "rank_points": 3000,
+                                        "max_rank_points": 3200,
+                                    },
+                                    "season_id": 41,
+                                    "season_statistics": {
+                                        "kills": 999,
+                                        "deaths": 999,
+                                        "match_outcomes": {
+                                            "wins": 1,
+                                            "losses": 1,
+                                            "abandons": 1,
+                                        },
+                                    },
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+    )
+
+    segment = response.data.segments[0]
+    assert segment.stats.kills is not None
+    assert segment.stats.kills.value == 90
+    assert segment.stats.deaths is not None
+    assert segment.stats.deaths.value == 30
+    assert segment.stats.kd_ratio is not None
+    assert segment.stats.kd_ratio.value == 3.0
+    assert segment.stats.matches_won is not None
+    assert segment.stats.matches_won.value == 20
+    assert segment.stats.matches_lost is not None
+    assert segment.stats.matches_lost.value == 10
+    assert segment.stats.matches_played is not None
+    assert segment.stats.matches_played.value == 32
+
+
 def test_seasonal_stats_fixtures_validate() -> None:
     seasonal_response = SeasonalStatsResponse.model_validate(
         load_fixture("seasonal_data.json")

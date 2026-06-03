@@ -174,11 +174,13 @@ def _normalize_raw_stats(full_profile: dict[str, Any]) -> dict[str, dict[str, An
     season_statistics = _dict_or_empty(full_profile.get("season_statistics"))
     match_outcomes = _dict_or_empty(season_statistics.get("match_outcomes"))
 
-    kills = _first_value(season_statistics, profile, "kills")
-    deaths = _first_value(season_statistics, profile, "deaths")
-    wins = _first_value(match_outcomes, profile, "wins")
-    losses = _first_value(match_outcomes, profile, "losses")
-    abandons = _first_value(match_outcomes, profile, "abandons", "abandon")
+    # Prefer ranked season totals from profile because the current-season UI should
+    # match the raw `stats` payload for the ranked board.
+    kills = _first_value(profile, season_statistics, "kills")
+    deaths = _first_value(profile, season_statistics, "deaths")
+    wins = _first_value(profile, match_outcomes, "wins")
+    losses = _first_value(profile, match_outcomes, "losses")
+    abandons = _first_value(profile, match_outcomes, "abandons", "abandon")
     played = sum(_to_int_or_zero(value) for value in (wins, losses, abandons))
 
     return {
